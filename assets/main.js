@@ -1,7 +1,7 @@
 function onReady() {
     // set up paint canvas
     JSPaint.init();
-    JSPaint.setColorFromRGB(255, 0, 0);
+    // JSPaint.setColorFromRGB(255, 0, 0);
     JSPaint.setSize(2);
 
     // set up sync service
@@ -11,7 +11,7 @@ function onReady() {
 
     // set up draw event listener
     JSPaint.addClickEventListener(function(e){
-        // console.log('event', e);
+        console.log('event', e);
     });
 }
 

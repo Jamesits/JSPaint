@@ -13,27 +13,11 @@ var JSPaint = (function () {
         curSize = 20,
         drawingAreaWidth,
         drawingAreaHeight,
-        colorPurple = {
-            r: 203,
-            g: 53,
-            b: 148
+        curColor = {
+            r: 0,
+            g: 0,
+            b: 0,
         },
-        colorGreen = {
-            r: 101,
-            g: 155,
-            b: 65
-        },
-        colorYellow = {
-            r: 255,
-            g: 207,
-            b: 51
-        },
-        colorBrown = {
-            r: 152,
-            g: 105,
-            b: 40
-        },
-        curColor = colorGreen,
 
         setTool = function (newTool) {
             curTool = newTool;
@@ -78,57 +62,48 @@ var JSPaint = (function () {
         // Redraws the canvas.
         redraw = function () {
 
-            var locX,
-                locY,
-                radius,
-                i,
-                selected;
-
             // console.log("redraw", curTool, "last redraw to: ", lastRedrawPtr);
 
             if (clickEvents.length - lastRedrawPtr > 0) {
 
                 // For each point drawn
-                for (i = 0; i < clickEvents.length - lastRedrawPtr; i += 1) {
+                for (var i = 0; i < clickEvents.length - lastRedrawPtr; i += 1) {
                     var currentRedrawPtr = i + lastRedrawPtr;
+                    if (clickEvents[currentRedrawPtr].clickX <= drawingAreaWidth
+                        && clickEvents[currentRedrawPtr].clickX >= 0
+                        && clickEvents[currentRedrawPtr].clickY <= drawingAreaHeight
+                        && clickEvents[currentRedrawPtr].clickY >= 0
+                    ) {
+                        canvasContext.beginPath();
 
-                    canvasContext.beginPath();
+                        // If dragging then draw a line between the two points
+                        if (clickEvents[currentRedrawPtr].clickDrag && currentRedrawPtr) {
+                            canvasContext.moveTo(clickEvents[currentRedrawPtr - 1].clickX, clickEvents[currentRedrawPtr - 1].clickY);
+                        } else {
+                            // The x position is moved over one pixel so a circle even if not dragging
+                            canvasContext.moveTo(clickEvents[currentRedrawPtr].clickX - 1, clickEvents[currentRedrawPtr].clickY);
+                        }
+                        canvasContext.lineTo(clickEvents[currentRedrawPtr].clickX, clickEvents[currentRedrawPtr].clickY);
 
-                    // Set the drawing radius
-                    radius = clickEvents[currentRedrawPtr].clickSize;
+                        if (curTool === "eraser") {
+                            canvasContext.strokeStyle = 'white';
+                        } else {
+                            canvasContext.strokeStyle = "rgb(" + clickEvents[currentRedrawPtr].clickColor.r + ", " + clickEvents[currentRedrawPtr].clickColor.g + ", " + clickEvents[currentRedrawPtr].clickColor.b + ")";
+                        }
 
-                    // If dragging then draw a line between the two points
-                    if (clickEvents[currentRedrawPtr].clickDrag && currentRedrawPtr) {
-                        canvasContext.moveTo(clickEvents[currentRedrawPtr - 1].clickX, clickEvents[currentRedrawPtr - 1].clickY);
-                    } else {
-                        // The x position is moved over one pixel so a circle even if not dragging
-                        canvasContext.moveTo(clickEvents[currentRedrawPtr].clickX - 1, clickEvents[currentRedrawPtr].clickY);
+                        canvasContext.lineCap = "round";
+                        canvasContext.lineJoin = "round";
+                        canvasContext.lineWidth = clickEvents[currentRedrawPtr].clickSize;
+                        canvasContext.stroke();
+                        canvasContext.closePath();
                     }
-                    canvasContext.lineTo(clickEvents[currentRedrawPtr].clickX, clickEvents[currentRedrawPtr].clickY);
-
-                    // Set the drawing color
-                    if (curTool === "eraser") {
-                        canvasContext.strokeStyle = 'white';
-                    } else {
-                        canvasContext.strokeStyle = "rgb(" + clickEvents[currentRedrawPtr].clickColor.r + ", " + clickEvents[currentRedrawPtr].clickColor.g + ", " + clickEvents[currentRedrawPtr].clickColor.b + ")";
-                    }
-
-                    canvasContext.lineCap = "round";
-                    canvasContext.lineJoin = "round";
-                    canvasContext.lineWidth = radius;
-                    canvasContext.stroke();
-                    canvasContext.closePath();
                 }
             }
-
         },
 
         // Add mouse and touch event listeners to the canvas
         createUserEvents = function () {
-
-            var
-
-                getCurrentMousePointerPos = function (e) {
+            var getCurrentMousePointerPos = function (e) {
                     return {
                         X: e.changedPointers[0].offsetX,
                         Y: e.changedPointers[0].offsetY,
@@ -136,44 +111,29 @@ var JSPaint = (function () {
                 },
 
                 pressDrawing = function (e) {
-                    // Mouse down location
                     var mouse = getCurrentMousePointerPos(e);
-                    // console.log("pressDrawing", mouse.X, mouse.Y);
-                    // console.log(e);
                     paint = true;
                     addClick(mouse.X, mouse.Y, false);
-
                     redraw();
                 },
 
                 dragDrawing = function (e) {
                     var mouse = getCurrentMousePointerPos(e);
-                    // console.log("dragDrawing", mouse.X, mouse.Y);
-                    // console.log(e);
-                    if (curTool !== "bucket") {
-                        if (paint) {
-                            addClick(mouse.X, mouse.Y, true);
-                            redraw();
-                        }
+                    if (paint) {
+                        addClick(mouse.X, mouse.Y, true);
+                        redraw();
                     }
-
                     // Prevent the whole page from dragging if on mobile
                     e.preventDefault();
                 },
 
                 releaseDrawing = function () {
-                    // console.log("releaseDrawing");
-                    if (curTool !== "bucket") {
-                        paint = false;
-                        redraw();
-                    }
+                    paint = false;
+                    redraw();
                 },
 
                 cancelDrawing = function () {
-                    console.log("cancleDrawing");
-                    if (curTool === "bucket") {
-                        paint = false;
-                    }
+                    paint = false;
                 };
 
             var gestureRecognizer = new Hammer(canvasContext.canvas);
@@ -219,7 +179,6 @@ var JSPaint = (function () {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
             }
             canvasContext = canvasElement.getContext("2d");
-
             resourceLoaded();
         };
 
