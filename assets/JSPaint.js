@@ -16,6 +16,7 @@ var JSPaint = function () {
         drawingAreaWidth,
         drawingAreaHeight,
         curColor = "#000000",
+        lastCanvasDrawRatio = 1,
         canvasDrawRatio = 1,
         lastBackgroundFrame,
         debug = {
@@ -24,6 +25,7 @@ var JSPaint = function () {
         },
         debugTimer,
         redrawTimer,
+        devicePixelRatioCheckTimer,
 
         setTool = function (newTool) {
             curTool = newTool;
@@ -38,7 +40,7 @@ var JSPaint = function () {
         },
 
         setSize = function (newSize) {
-            curSize = newSize;
+            curSize = newSize / lastCanvasDrawRatio * canvasDrawRatio;
         },
 
         getPixelRatio = function () {
@@ -80,12 +82,12 @@ var JSPaint = function () {
 
             // If dragging then draw a line between the two points
             if (currentStroke.clickDrag && lastStroke && lastStroke.clickTool !== "clear") {
-                canvasContext.moveTo(lastStroke.clickX * lastStroke.canvasDrawRatio, lastStroke.clickY * lastStroke.canvasDrawRatio);
+                canvasContext.moveTo(lastStroke.clickX * canvasDrawRatio, lastStroke.clickY * canvasDrawRatio);
             } else {
                 // The x position is moved over one pixel so a circle even if not dragging
-                canvasContext.moveTo(currentStroke.clickX * currentStroke.canvasDrawRatio - 1, currentStroke.clickY * currentStroke.canvasDrawRatio);
+                canvasContext.moveTo((currentStroke.clickX - 1) * canvasDrawRatio, currentStroke.clickY * canvasDrawRatio);
             }
-            canvasContext.lineTo(currentStroke.clickX * currentStroke.canvasDrawRatio, currentStroke.clickY * currentStroke.canvasDrawRatio);
+            canvasContext.lineTo(currentStroke.clickX * canvasDrawRatio, currentStroke.clickY * canvasDrawRatio);
 
             if (currentStroke.clickTool === "eraser") {
                 canvasContext.strokeStyle = 'white';
@@ -95,7 +97,7 @@ var JSPaint = function () {
 
             canvasContext.lineCap = "round";
             canvasContext.lineJoin = "round";
-            canvasContext.lineWidth = currentStroke.clickSize * currentStroke.canvasDrawRatio;
+            canvasContext.lineWidth = currentStroke.clickSize / currentStroke.canvasDrawRatio * canvasDrawRatio;
             canvasContext.closePath();
             canvasContext.stroke();
         },
@@ -103,8 +105,8 @@ var JSPaint = function () {
         canvasAppend = function () {
             for (var currentRedrawPtr = lastRedrawPtr; currentRedrawPtr < clickEvents.length; currentRedrawPtr += 1) {
                 draw(canvasContext, clickEvents[currentRedrawPtr], clickEvents[currentRedrawPtr - 1]);
+                lastRedrawPtr++;
             }
-            clearClick();
         },
 
         // Redraws the canvas.
@@ -119,6 +121,7 @@ var JSPaint = function () {
                     draw(bgCanvasContext, clickEvents[currentRedrawPtr], clickEvents[currentRedrawPtr - 1]);
                 }
             }
+
             lastBackgroundFrame = bgCanvasContext.getImageData(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
             canvasContext.putImageData(lastBackgroundFrame, 0, 0);
             var t1 = performance.now();
@@ -129,7 +132,7 @@ var JSPaint = function () {
             }
         },
 
-        autoRedraw = function () {
+        autoRedraw = async function () {
             redraw();
             redrawTimer = window.setTimeout(autoRedraw, 1/5);
         },
@@ -169,7 +172,7 @@ var JSPaint = function () {
                     paint = false;
                 };
 
-            var gestureRecognizer = new Hammer(canvasContext.canvas);
+            gestureRecognizer = new Hammer(canvasContext.canvas);
             gestureRecognizer.get('pan').set({
                 direction: Hammer.DIRECTION_ALL,
                 threshold: 1,
@@ -193,6 +196,15 @@ var JSPaint = function () {
             clickEventListeners.push(f);
         },
 
+        checkPixelRatioChange = function () {
+            canvasDrawRatio = getPixelRatio();
+            if (canvasDrawRatio !== lastCanvasDrawRatio) {
+                setSize(curSize);
+                onresize();
+                lastCanvasDrawRatio = canvasDrawRatio;
+            }
+        },
+
         onresize = function (e) {
             canvasDrawRatio = getPixelRatio();
             drawingAreaWidth = canvasDiv.offsetWidth;
@@ -205,7 +217,7 @@ var JSPaint = function () {
         },
 
         printDebugMsg = function () {
-            var text = "FPS: " + debug.fps + " " + debug.userMsg;
+            var text = "FPS: " + debug.fps + " Ratio: " + canvasDrawRatio + " " + debug.userMsg;
             debugDiv.innerHTML = text;
         },
 
@@ -252,8 +264,10 @@ var JSPaint = function () {
             }
             bgCanvasContext = canvasElement.getContext("2d");
 
-            debugDiv = document.getElementById("debug");
+            // check pixel ratio change
+            devicePixelRatioCheckTimer = window.setInterval(checkPixelRatioChange, 100);
 
+            debugDiv = document.getElementById("debug");
             debugTimer = window.setInterval(printDebugMsg, 500);
 
             resourceLoaded();
