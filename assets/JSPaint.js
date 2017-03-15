@@ -9,8 +9,6 @@ var JSPaint = (function () {
         paint = false,
         curTool = "marker",
         curSize = 20,
-        // drawingAreaX = 0,
-        // drawingAreaY = 0,
         drawingAreaWidth,
         drawingAreaHeight,
         totalLoadResources = 1,
@@ -127,144 +125,6 @@ var JSPaint = (function () {
 
         },
 
-        matchOutlineColor = function (r, g, b, a) {
-
-            return (r + g + b < 100 && a === 255);
-        },
-
-        matchStartColor = function (pixelPos, startR, startG, startB) {
-
-            var r = outlineLayerData.data[pixelPos],
-                g = outlineLayerData.data[pixelPos + 1],
-                b = outlineLayerData.data[pixelPos + 2],
-                a = outlineLayerData.data[pixelPos + 3];
-
-            // If current pixel of the outline image is black
-            if (matchOutlineColor(r, g, b, a)) {
-                return false;
-            }
-
-            r = colorLayerData.data[pixelPos];
-            g = colorLayerData.data[pixelPos + 1];
-            b = colorLayerData.data[pixelPos + 2];
-
-            // If the current pixel matches the clicked color
-            if (r === startR && g === startG && b === startB) {
-                return true;
-            }
-
-            // If current pixel matches the new color
-            if (r === curColor.r && g === curColor.g && b === curColor.b) {
-                return false;
-            }
-
-            // Return the difference in current color and start color within a tolerance
-            return (Math.abs(r - startR) + Math.abs(g - startG) + Math.abs(b - startB) < 255);
-        },
-
-        colorPixel = function (pixelPos, r, g, b, a) {
-
-            colorLayerData.data[pixelPos] = r;
-            colorLayerData.data[pixelPos + 1] = g;
-            colorLayerData.data[pixelPos + 2] = b;
-            colorLayerData.data[pixelPos + 3] = a !== undefined ? a : 255;
-        },
-
-        floodFill = function (startX, startY, startR, startG, startB) {
-
-            var newPos,
-                x,
-                y,
-                pixelPos,
-                reachLeft,
-                reachRight,
-                drawingBoundLeft = 0,
-                drawingBoundTop = 0,
-                drawingBoundRight = drawingAreaWidth - 1,
-                drawingBoundBottom = drawingAreaHeight - 1,
-                pixelStack = [
-                    [startX, startY]
-                ];
-
-            while (pixelStack.length) {
-
-                newPos = pixelStack.pop();
-                x = newPos[0];
-                y = newPos[1];
-
-                // Get current pixel position
-                pixelPos = (y * drawingAreaWidth + x) * 4;
-
-                // Go up as long as the color matches and are inside the canvas
-                while (y >= drawingBoundTop && matchStartColor(pixelPos, startR, startG, startB)) {
-                    y -= 1;
-                    pixelPos -= drawingAreaWidth * 4;
-                }
-
-                pixelPos += drawingAreaWidth * 4;
-                y += 1;
-                reachLeft = false;
-                reachRight = false;
-
-                // Go down as long as the color matches and in inside the canvas
-                while (y <= drawingBoundBottom && matchStartColor(pixelPos, startR, startG, startB)) {
-                    y += 1;
-
-                    colorPixel(pixelPos, curColor.r, curColor.g, curColor.b);
-
-                    if (x > drawingBoundLeft) {
-                        if (matchStartColor(pixelPos - 4, startR, startG, startB)) {
-                            if (!reachLeft) {
-                                // Add pixel to stack
-                                pixelStack.push([x - 1, y]);
-                                reachLeft = true;
-                            }
-                        } else if (reachLeft) {
-                            reachLeft = false;
-                        }
-                    }
-
-                    if (x < drawingBoundRight) {
-                        if (matchStartColor(pixelPos + 4, startR, startG, startB)) {
-                            if (!reachRight) {
-                                // Add pixel to stack
-                                pixelStack.push([x + 1, y]);
-                                reachRight = true;
-                            }
-                        } else if (reachRight) {
-                            reachRight = false;
-                        }
-                    }
-
-                    pixelPos += drawingAreaWidth * 4;
-                }
-            }
-        },
-
-        // Start painting with paint bucket tool starting from pixel specified by startX and startY
-        paintAt = function (startX, startY) {
-
-            var pixelPos = (startY * drawingAreaWidth + startX) * 4,
-                r = colorLayerData.data[pixelPos],
-                g = colorLayerData.data[pixelPos + 1],
-                b = colorLayerData.data[pixelPos + 2],
-                a = colorLayerData.data[pixelPos + 3];
-
-            if (r === curColor.r && g === curColor.g && b === curColor.b) {
-                // Return because trying to fill with the same color
-                return;
-            }
-
-            if (matchOutlineColor(r, g, b, a)) {
-                // Return because clicked outline
-                return;
-            }
-
-            floodFill(startX, startY, r, g, b);
-
-            redraw();
-        },
-
         // Add mouse and touch event listeners to the canvas
         createUserEvents = function () {
 
@@ -285,13 +145,8 @@ var JSPaint = (function () {
                     var mouse = getCurrentMousePointerPos(e);
                     // console.log("pressDrawing", mouse.X, mouse.Y);
                     // console.log(e);
-                    if (curTool === "bucket") {
-                        // Mouse click location on drawing area
-                        paintAt(mouse.X, mouse.Y);
-                    } else {
-                        paint = true;
-                        addClick(mouse.X, mouse.Y, false);
-                    }
+                    paint = true;
+                    addClick(mouse.X, mouse.Y, false);
 
                     redraw();
                 },
