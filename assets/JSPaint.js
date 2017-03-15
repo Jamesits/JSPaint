@@ -141,8 +141,8 @@ var JSPaint = function () {
         createUserEvents = function () {
             var getCurrentMousePointerPos = function (e) {
                     return {
-                        X: e.changedPointers[0].offsetX,
-                        Y: e.changedPointers[0].offsetY,
+                        X: e.changedPointers[0].clientX,
+                        Y: e.changedPointers[0].clientY,
                     };
                 },
 
