@@ -1,4 +1,4 @@
-var JSPaint = (function () {
+var JSPaint = function () {
 
     "use strict";
 
@@ -51,7 +51,6 @@ var JSPaint = (function () {
             for (var i in clickEventListeners) {
                 clickEventListeners[i](event, clickEvents);
             }
-            // console.log(event);
         },
 
         clearClick = function () {
@@ -69,6 +68,7 @@ var JSPaint = (function () {
                 // For each point drawn
                 for (var i = 0; i < clickEvents.length - lastRedrawPtr; i += 1) {
                     var currentRedrawPtr = i + lastRedrawPtr;
+                    // ignore out of canvas things
                     if (clickEvents[currentRedrawPtr].clickX <= drawingAreaWidth
                         && clickEvents[currentRedrawPtr].clickX >= 0
                         && clickEvents[currentRedrawPtr].clickY <= drawingAreaHeight
@@ -168,8 +168,8 @@ var JSPaint = (function () {
             if (e) redraw();
         },
 
-        init = function () {
-            canvasDiv = document.getElementById('canvasDiv');
+        init = function (element) {
+            canvasDiv = element;
             var canvasElement;
             canvasElement = document.createElement('canvas');
             canvasElement.setAttribute('id', 'drawing');
@@ -191,4 +191,4 @@ var JSPaint = (function () {
         setSize: setSize,
         addClickEventListener: addClickEventListener,
     };
-}());
+};

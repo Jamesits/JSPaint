@@ -1,8 +1,9 @@
 function onReady() {
     // set up paint canvas
-    JSPaint.init();
+    p = JSPaint();
+    p.init(document.getElementById('canvasDiv'));
     // JSPaint.setColorFromRGB(255, 0, 0);
-    JSPaint.setSize(2);
+    p.setSize(2);
 
     // set up sync service
     // var config = { syncURL: "https://jspaint-test-jimu.wilddogio.com" };
@@ -10,7 +11,7 @@ function onReady() {
     // var ref = wilddog.sync().ref();
 
     // set up draw event listener
-    JSPaint.addClickEventListener(function(e){
+    p.addClickEventListener(function(e){
         console.log('event', e);
     });
 }
