@@ -5,7 +5,7 @@ var JSPaint = (function () {
     var canvasContext,
         canvasDiv,
         clickEvents = [],
-        clickEventsListeners = [],
+        clickEventListeners = [],
         lastRedrawPtr = 0,
         gestureRecognizer,
         paint = false,
@@ -48,8 +48,8 @@ var JSPaint = (function () {
                 timestamp: Date.now(),
             };
             clickEvents.push(event);
-            for (var i in clickEventsListeners) {
-                clickEventsListeners[i](event, clickEvents);
+            for (var i in clickEventListeners) {
+                clickEventListeners[i](event, clickEvents);
             }
             // console.log(event);
         },
@@ -157,7 +157,7 @@ var JSPaint = (function () {
         },
 
         addClickEventListener = function (f) {
-            clickEventsListeners.push(f);
+            clickEventListeners.push(f);
         },
 
         onresize = function(e) {
