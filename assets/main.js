@@ -11,7 +11,7 @@ function onReady() {
 
     // set up draw event listener
     JSPaint.addClickEventListener(function(e){
-        console.log('event', e);
+        // console.log('event', e);
     });
 }
 

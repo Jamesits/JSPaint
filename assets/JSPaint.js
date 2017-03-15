@@ -200,34 +200,29 @@ var JSPaint = (function () {
         },
 
         onresize = function() {
-            drawingAreaWidth = contexts.drawing.offsetX;
-            drawingAreaHeight = contexts.drawing.offsetY;
+            drawingAreaWidth = document.getElementById('canvasDiv').offsetWidth;
+            drawingAreaHeight = document.getElementById('canvasDiv').offsetHeight;
+            for (var i in contexts) {
+                contexts[i].canvas.width = drawingAreaWidth;
+                contexts[i].canvas.height = drawingAreaHeight;
+            }
         },
 
-        // Creates a canvas element, loads images, adds events, and draws the canvas for the first time.
         init = function () {
             var canvasElement;
 
             canvasElement = document.createElement('canvas');
-            // canvasElement.setAttribute('width', drawingAreaWidth);
-            // canvasElement.setAttribute('height', drawingAreaHeight);
             canvasElement.setAttribute('id', 'drawing');
             canvasElement.setAttribute('class', 'jspaint');
-            // canvasElement.style.marginLeft = drawingAreaX + "px";
-            // canvasElement.style.marginTop = drawingAreaY + "px";
             document.getElementById('canvasDiv').appendChild(canvasElement);
             if (typeof G_vmlCanvasManager !== "undefined") {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
             }
-            contexts.drawing = canvasElement.getContext("2d"); // Grab the 2d canvas context
+            contexts.drawing = canvasElement.getContext("2d");
 
             canvasElement = document.createElement('canvas');
-            // canvasElement.setAttribute('width', drawingAreaWidth);
-            // canvasElement.setAttribute('height', drawingAreaHeight);
             canvasElement.setAttribute('id', 'outline');
             canvasElement.setAttribute('class', 'jspaint');
-            // canvasElement.style.marginLeft = drawingAreaX + "px";
-            // canvasElement.style.marginTop = drawingAreaY + "px";
             document.getElementById('canvasDiv').appendChild(canvasElement);
             if (typeof G_vmlCanvasManager !== "undefined") {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
