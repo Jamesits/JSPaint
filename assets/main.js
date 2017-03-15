@@ -5,7 +5,7 @@ function onReady() {
     JSPaint.setSize(2);
 
     // set up sync service
-    // var config = { syncURL: "https://jspaint-test-jimu.wilddogio.com " };
+    // var config = { syncURL: "https://jspaint-test-jimu.wilddogio.com" };
     // wilddog.initializeApp(config);
     // var ref = wilddog.sync().ref();
 
