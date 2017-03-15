@@ -6,15 +6,12 @@ var JSPaint = (function () {
         clickEvents = [],
         clickEventsListeners = [],
         lastRedrawPtr = 0,
+        gestureRecognizer,
         paint = false,
         curTool = "marker",
         curSize = 20,
         drawingAreaWidth,
         drawingAreaHeight,
-        totalLoadResources = 1,
-        curLoadResNum = 0,
-        colorLayerData,
-        outlineLayerData,
         colorPurple = {
             r: 203,
             g: 53,
@@ -131,9 +128,6 @@ var JSPaint = (function () {
             var
 
                 getCurrentMousePointerPos = function (e) {
-                    // var rect = contexts.outline.canvas.getBoundingClientRect();
-                    // console.log(rect.top, rect.right, rect.bottom, rect.left);
-
                     return {
                         X: e.changedPointers[0].offsetX,
                         Y: e.changedPointers[0].offsetY,
@@ -181,15 +175,15 @@ var JSPaint = (function () {
                     }
                 };
 
-            var mc = new Hammer(contexts.outline.canvas);
-            mc.get('pan').set({
+            var gestureRecognizer = new Hammer(contexts.outline.canvas);
+            gestureRecognizer.get('pan').set({
                 direction: Hammer.DIRECTION_ALL,
                 threshold: 1,
             });
-            mc.on('panstart', pressDrawing);
-            mc.on('panmove', dragDrawing);
-            mc.on('panend', releaseDrawing);
-            mc.on('pancancel', cancelDrawing);
+            gestureRecognizer.on('panstart', pressDrawing);
+            gestureRecognizer.on('panmove', dragDrawing);
+            gestureRecognizer.on('panend', releaseDrawing);
+            gestureRecognizer.on('pancancel', cancelDrawing);
 
             window.addEventListener('resize', onresize);
         },
@@ -197,11 +191,8 @@ var JSPaint = (function () {
         // Calls the redraw function after all neccessary resources are loaded.
         resourceLoaded = function () {
             onresize();
-            curLoadResNum += 1;
-            if (curLoadResNum === totalLoadResources) {
-                redraw();
-                createUserEvents();
-            }
+            redraw();
+            createUserEvents();
         },
 
         addClickEventListener = function (f) {
