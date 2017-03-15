@@ -21,6 +21,8 @@ var JSPaint = function () {
         lastBackgroundFrame,
         debug = {
             fps: 0,
+            eps: 0,
+            lastEvent: 0,
             userMsg: "",
         },
         debugTimer,
@@ -125,16 +127,18 @@ var JSPaint = function () {
             lastBackgroundFrame = bgCanvasContext.getImageData(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
             canvasContext.putImageData(lastBackgroundFrame, 0, 0);
             var t1 = performance.now();
-            if (debug.fps == 0) {
-                debug.fps = 1000 / (t1 - t0);
-            } else {
-                debug.fps = (debug.fps + 1000 / (t1 - t0)) / 2;
-            }
+            debug.fps = (debug.fps + 1000 / (t1 - t0)) / 2;
         },
 
         autoRedraw = async function () {
             redraw();
             redrawTimer = window.setTimeout(autoRedraw, 1/5);
+        },
+
+        calcEventRate = async function() {
+            var current_time = performance.now();
+            debug.eps = (debug.eps + 1000 / (current_time - debug.lastEvent)) / 2;
+            debug.lastEvent = current_time;
         },
 
         // Add mouse and touch event listeners to the canvas
@@ -147,6 +151,7 @@ var JSPaint = function () {
                 },
 
                 pressDrawing = function (e) {
+                    calcEventRate();
                     var mouse = getCurrentMousePointerPos(e);
                     paint = true;
                     addClick(mouse.X, mouse.Y, false);
@@ -154,6 +159,7 @@ var JSPaint = function () {
                 },
 
                 dragDrawing = function (e) {
+                    calcEventRate();
                     var mouse = getCurrentMousePointerPos(e);
                     if (paint) {
                         addClick(mouse.X, mouse.Y, true);
@@ -164,11 +170,13 @@ var JSPaint = function () {
                 },
 
                 releaseDrawing = function () {
+                    calcEventRate();
                     paint = false;
                     canvasAppend();
                 },
 
                 cancelDrawing = function () {
+                    calcEventRate();
                     paint = false;
                 };
 
@@ -217,7 +225,7 @@ var JSPaint = function () {
         },
 
         printDebugMsg = function () {
-            var text = "FPS: " + debug.fps + " Ratio: " + canvasDrawRatio + " " + debug.userMsg;
+            var text = "FPS: " + debug.fps.toFixed(2) + " EPS: " + debug.eps + " Ratio: " + canvasDrawRatio + " " + debug.userMsg;
             debugDiv.innerHTML = text;
         },
 
