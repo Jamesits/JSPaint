@@ -107,8 +107,8 @@ var JSPaint = function () {
                         canvasContext.lineCap = "round";
                         canvasContext.lineJoin = "round";
                         canvasContext.lineWidth = clickEvents[currentRedrawPtr].clickSize;
-                        canvasContext.stroke();
                         canvasContext.closePath();
+                        canvasContext.stroke();
                     }
                 }
             }
