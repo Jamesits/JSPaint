@@ -80,12 +80,12 @@ var JSPaint = function () {
 
             // If dragging then draw a line between the two points
             if (currentStroke.clickDrag && lastStroke && lastStroke.clickTool !== "clear") {
-                canvasContext.moveTo(lastStroke.clickX, lastStroke.clickY);
+                canvasContext.moveTo(lastStroke.clickX * lastStroke.canvasDrawRatio, lastStroke.clickY * lastStroke.canvasDrawRatio);
             } else {
                 // The x position is moved over one pixel so a circle even if not dragging
-                canvasContext.moveTo(currentStroke.clickX - 1, currentStroke.clickY);
+                canvasContext.moveTo(currentStroke.clickX * currentStroke.canvasDrawRatio - 1, currentStroke.clickY * currentStroke.canvasDrawRatio);
             }
-            canvasContext.lineTo(currentStroke.clickX, currentStroke.clickY);
+            canvasContext.lineTo(currentStroke.clickX * currentStroke.canvasDrawRatio, currentStroke.clickY * currentStroke.canvasDrawRatio);
 
             if (currentStroke.clickTool === "eraser") {
                 canvasContext.strokeStyle = 'white';
@@ -95,7 +95,7 @@ var JSPaint = function () {
 
             canvasContext.lineCap = "round";
             canvasContext.lineJoin = "round";
-            canvasContext.lineWidth = currentStroke.clickSize;
+            canvasContext.lineWidth = currentStroke.clickSize * currentStroke.canvasDrawRatio;
             canvasContext.closePath();
             canvasContext.stroke();
         },
@@ -103,7 +103,7 @@ var JSPaint = function () {
         canvasAppend = function () {
             for (var currentRedrawPtr = lastRedrawPtr; currentRedrawPtr < clickEvents.length; currentRedrawPtr += 1) {
                 draw(canvasContext, clickEvents[currentRedrawPtr], clickEvents[currentRedrawPtr - 1]);
-            }    
+            }
             clearClick();
         },
 
@@ -197,10 +197,10 @@ var JSPaint = function () {
             canvasDrawRatio = getPixelRatio();
             drawingAreaWidth = canvasDiv.offsetWidth;
             drawingAreaHeight = canvasDiv.offsetHeight;
-            canvasContext.canvas.width = canvasDiv.offsetWidth;
-            canvasContext.canvas.height = canvasDiv.offsetHeight;
-            bgCanvasContext.canvas.width = canvasDiv.offsetWidth;
-            bgCanvasContext.canvas.height = canvasDiv.offsetHeight;
+            canvasContext.canvas.width = canvasDiv.offsetWidth * canvasDrawRatio;
+            canvasContext.canvas.height = canvasDiv.offsetHeight * canvasDrawRatio;
+            bgCanvasContext.canvas.width = canvasDiv.offsetWidth * canvasDrawRatio;
+            bgCanvasContext.canvas.height = canvasDiv.offsetHeight * canvasDrawRatio;
             if (e) redraw();
         },
 
@@ -225,7 +225,7 @@ var JSPaint = function () {
         },
 
         doInitialSync = function (events) {
-            
+
         },
 
         init = function (element) {

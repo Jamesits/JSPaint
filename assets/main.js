@@ -5,7 +5,7 @@ function onReady() {
 
     // set up draw event listener
     p.addClickEventListener(function(e, f){
-
+        console.log(e);
     });
 
     // disable context menu

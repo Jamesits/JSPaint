@@ -51,6 +51,7 @@ canvas.jspaint {
 }
 
 seperator {
+    text-align: center;
     display: inline-block;
-    min-width: 50px;
+    min-width: 5px;
 }
