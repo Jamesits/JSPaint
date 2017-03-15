@@ -18,6 +18,7 @@ var JSPaint = function () {
             g: 0,
             b: 0,
         },
+        canvasDrawRatio = 1,
 
         setTool = function (newTool) {
             curTool = newTool;
@@ -37,6 +38,17 @@ var JSPaint = function () {
             curSize = newSize;
         },
 
+        getPixelRatio = function () {
+            var backingStore = canvasContext.backingStorePixelRatio ||
+                canvasContext.webkitBackingStorePixelRatio ||
+                canvasContext.mozBackingStorePixelRatio ||
+                canvasContext.msBackingStorePixelRatio ||
+                canvasContext.oBackingStorePixelRatio ||
+                canvasContext.backingStorePixelRatio || 1;
+
+            return (window.devicePixelRatio || 1) / backingStore;
+        },
+
         addClick = function (x, y, dragging) {
             event = {
                 clickX: x,
@@ -45,6 +57,7 @@ var JSPaint = function () {
                 clickColor: curColor,
                 clickSize: curSize,
                 clickDrag: dragging,
+                canvasDrawRatio: getPixelRatio(),
                 timestamp: Date.now(),
             };
             clickEvents.push(event);
