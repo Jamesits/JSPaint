@@ -18,6 +18,10 @@ var JSPaint = function () {
         curColor = "#000000",
         lastCanvasDrawRatio = 1,
         canvasDrawRatio = 1,
+        // bgRefresh = false,
+        bgRefreshInterval = 500,
+        debugMsgRefreshInterval = 500,
+        pixelRatioCheckInterval = 100,
         lastBackgroundFrame,
         debug = {
             fps: 0,
@@ -131,8 +135,8 @@ var JSPaint = function () {
         },
 
         autoRedraw = async function () {
-            redraw();
-            redrawTimer = window.setTimeout(autoRedraw, 1/5);
+            if (bgRefresh) redraw();
+            redrawTimer = window.setTimeout(autoRedraw, bgRefreshInterval);
         },
 
         calcEventRate = async function() {
@@ -225,7 +229,7 @@ var JSPaint = function () {
         },
 
         printDebugMsg = function () {
-            var text = "FPS: " + debug.fps.toFixed(2) + " EPS: " + debug.eps + " Ratio: " + canvasDrawRatio + " " + debug.userMsg;
+            var text = "Optimal FPS: " + debug.fps.toFixed(2) + " EPS: " + debug.eps.toFixed(2) + " Refresh Interval: " + bgRefreshInterval.toFixed(2) + "ms Ratio: " + canvasDrawRatio + " " + debug.userMsg;
             debugDiv.innerHTML = text;
         },
 
@@ -273,10 +277,10 @@ var JSPaint = function () {
             bgCanvasContext = canvasElement.getContext("2d");
 
             // check pixel ratio change
-            devicePixelRatioCheckTimer = window.setInterval(checkPixelRatioChange, 100);
+            devicePixelRatioCheckTimer = window.setInterval(checkPixelRatioChange, pixelRatioCheckInterval);
 
             debugDiv = document.getElementById("debug");
-            debugTimer = window.setInterval(printDebugMsg, 500);
+            debugTimer = window.setInterval(printDebugMsg, debugMsgRefreshInterval);
 
             resourceLoaded();
         };
