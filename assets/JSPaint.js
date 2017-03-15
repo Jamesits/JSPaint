@@ -57,7 +57,7 @@ var JSPaint = function () {
                 clickColor: curColor,
                 clickSize: curSize,
                 clickDrag: dragging,
-                canvasDrawRatio: getPixelRatio(),
+                canvasDrawRatio: canvasDrawRatio,
                 timestamp: Date.now(),
             };
             clickEvents.push(event);
@@ -173,11 +173,12 @@ var JSPaint = function () {
             clickEventListeners.push(f);
         },
 
-        onresize = function(e) {
+        onresize = function (e) {
+            canvasDrawRatio = getPixelRatio();
             drawingAreaWidth = canvasDiv.offsetWidth;
             drawingAreaHeight = canvasDiv.offsetHeight;
-            canvasContext.canvas.width = drawingAreaWidth;
-            canvasContext.canvas.height = drawingAreaHeight;
+            canvasContext.canvas.width = canvasDiv.offsetWidth;
+            canvasContext.canvas.height = canvasDiv.offsetHeight;
             if (e) redraw();
         },
 
