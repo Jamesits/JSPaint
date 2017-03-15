@@ -10,14 +10,10 @@ var JSPaint = function () {
         gestureRecognizer,
         paint = false,
         curTool = "marker",
-        curSize = 20,
+        curSize = 2,
         drawingAreaWidth,
         drawingAreaHeight,
-        curColor = {
-            r: 0,
-            g: 0,
-            b: 0,
-        },
+        curColor = "#000000",
         canvasDrawRatio = 1,
 
         setTool = function (newTool) {
@@ -29,9 +25,7 @@ var JSPaint = function () {
         },
 
         setColorFromRGB = function (r, g, b) {
-            curColor.r = r;
-            curColor.g = g;
-            curColor.b = b;
+            curColor = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
         },
 
         setSize = function (newSize) {
@@ -98,10 +92,10 @@ var JSPaint = function () {
                         }
                         canvasContext.lineTo(clickEvents[currentRedrawPtr].clickX, clickEvents[currentRedrawPtr].clickY);
 
-                        if (curTool === "eraser") {
+                        if (clickEvents[currentRedrawPtr].clickTool === "eraser") {
                             canvasContext.strokeStyle = 'white';
                         } else {
-                            canvasContext.strokeStyle = "rgb(" + clickEvents[currentRedrawPtr].clickColor.r + ", " + clickEvents[currentRedrawPtr].clickColor.g + ", " + clickEvents[currentRedrawPtr].clickColor.b + ")";
+                            canvasContext.strokeStyle = clickEvents[currentRedrawPtr].clickColor;
                         }
 
                         canvasContext.lineCap = "round";
