@@ -7,28 +7,18 @@
         <link href="assets/index.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
-        <div id="canvasDiv"></div>
+        <div id="flexbox-wrapper">
+            <div id="canvasDiv"></div>
+            <div id="toolbar">
+                <button id="draw" onclick="JSPaint.setTool('marker')">Draw</button>
+                <button id="erase" onclick="JSPaint.setTool('eraser')">Erase</button>
+            </div>
+        </div>
         <!--[if lte IE 8]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
         <script type="text/javascript" src="assets/hammer.min.js"></script>
         <script type="text/javascript" src="assets/hammer-time.min.js"></script>
-        <script src="https://cdn.wilddog.com/sdk/js/2.5.2/wilddog-sync.js"></script>
+        <!--<script src="https://cdn.wilddog.com/sdk/js/2.5.2/wilddog-sync.js"></script>-->
         <script type="text/javascript" src="assets/JSPaint.js"></script>
-        <script type="text/javascript">
-
-            // set up paint canvas
-            JSPaint.init();
-            JSPaint.setColorFromRGB(255, 0, 0);
-            JSPaint.setSize(2);
-
-            // set up sync service
-            var config = { syncURL: "https://jspaint-test-jimu.wilddogio.com " };
-            wilddog.initializeApp(config); 
-            var ref = wilddog.sync().ref();
-
-            // set up draw event listener
-            JSPaint.addClickEventListener(function(e){
-                console.log('event', e);
-            });
-        </script>
+        <script type="text/javascript" src="assets/main.js"></script>
     </body>
 </html>

@@ -3,18 +3,16 @@ var JSPaint = (function () {
     "use strict";
 
     var contexts = {},
-        canvasWidth = 1024,
-        canvasHeight = 768,
         clickEvents = [],
         clickEventsListeners = [],
         lastRedrawPtr = 0,
         paint = false,
         curTool = "marker",
         curSize = 20,
-        drawingAreaX = 0,
-        drawingAreaY = 0,
-        drawingAreaWidth = 1024,
-        drawingAreaHeight = 768,
+        // drawingAreaX = 0,
+        // drawingAreaY = 0,
+        drawingAreaWidth,
+        drawingAreaHeight,
         totalLoadResources = 1,
         curLoadResNum = 0,
         colorLayerData,
@@ -59,22 +57,6 @@ var JSPaint = (function () {
             curSize = newSize;
         },
 
-        // Draw a color swatch
-        drawColorSwatch = function (color, x, y) {
-
-            context.beginPath();
-            context.arc(x + 46, y + 23, 18, 0, Math.PI * 2, true);
-            context.closePath();
-            context.fillStyle = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
-            context.fill();
-
-            if (curColor === color) {
-                context.drawImage(swatchImage, 0, 0, 59, swatchImageHeight, x, y, 59, swatchImageHeight);
-            } else {
-                context.drawImage(swatchImage, x, y, swatchImageWidth, swatchImageHeight);
-            }
-        },
-
         addClick = function (x, y, dragging) {
             event = {
                 clickX: x,
@@ -83,6 +65,7 @@ var JSPaint = (function () {
                 clickColor: curColor,
                 clickSize: curSize,
                 clickDrag: dragging,
+                timestamp: Date.now(),
             };
             clickEvents.push(event);
             for (var i in clickEventsListeners) {
@@ -104,7 +87,7 @@ var JSPaint = (function () {
                 radius,
                 i,
                 selected;
-            
+
             // console.log("redraw", curTool, "last redraw to: ", lastRedrawPtr);
 
             if (clickEvents.length - lastRedrawPtr > 0) {
@@ -329,7 +312,7 @@ var JSPaint = (function () {
                 },
 
                 releaseDrawing = function () {
-                    console.log("releaseDrawing");
+                    // console.log("releaseDrawing");
                     if (curTool !== "bucket") {
                         paint = false;
                         redraw();
@@ -352,11 +335,13 @@ var JSPaint = (function () {
             mc.on('panmove', dragDrawing);
             mc.on('panend', releaseDrawing);
             mc.on('pancancel', cancelDrawing);
+
+            window.addEventListener('resize', onresize);
         },
 
         // Calls the redraw function after all neccessary resources are loaded.
         resourceLoaded = function () {
-
+            onresize();
             curLoadResNum += 1;
             if (curLoadResNum === totalLoadResources) {
                 redraw();
@@ -368,23 +353,22 @@ var JSPaint = (function () {
             clickEventsListeners.push(f);
         },
 
-        // Creates a canvas element, loads images, adds events, and draws the canvas for the first time.
-        init = function (width, height) {
+        onresize = function() {
+            drawingAreaWidth = contexts.drawing.offsetX;
+            drawingAreaHeight = contexts.drawing.offsetY;
+        },
 
+        // Creates a canvas element, loads images, adds events, and draws the canvas for the first time.
+        init = function () {
             var canvasElement;
 
-            if (width && height) {
-                canvasWidth = width;
-                canvasHeight = height;
-            }
-
             canvasElement = document.createElement('canvas');
-            canvasElement.setAttribute('width', drawingAreaWidth);
-            canvasElement.setAttribute('height', drawingAreaHeight);
+            // canvasElement.setAttribute('width', drawingAreaWidth);
+            // canvasElement.setAttribute('height', drawingAreaHeight);
             canvasElement.setAttribute('id', 'drawing');
             canvasElement.setAttribute('class', 'jspaint');
-            canvasElement.style.marginLeft = drawingAreaX + "px";
-            canvasElement.style.marginTop = drawingAreaY + "px";
+            // canvasElement.style.marginLeft = drawingAreaX + "px";
+            // canvasElement.style.marginTop = drawingAreaY + "px";
             document.getElementById('canvasDiv').appendChild(canvasElement);
             if (typeof G_vmlCanvasManager !== "undefined") {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
@@ -392,12 +376,12 @@ var JSPaint = (function () {
             contexts.drawing = canvasElement.getContext("2d"); // Grab the 2d canvas context
 
             canvasElement = document.createElement('canvas');
-            canvasElement.setAttribute('width', drawingAreaWidth);
-            canvasElement.setAttribute('height', drawingAreaHeight);
+            // canvasElement.setAttribute('width', drawingAreaWidth);
+            // canvasElement.setAttribute('height', drawingAreaHeight);
             canvasElement.setAttribute('id', 'outline');
             canvasElement.setAttribute('class', 'jspaint');
-            canvasElement.style.marginLeft = drawingAreaX + "px";
-            canvasElement.style.marginTop = drawingAreaY + "px";
+            // canvasElement.style.marginLeft = drawingAreaX + "px";
+            // canvasElement.style.marginTop = drawingAreaY + "px";
             document.getElementById('canvasDiv').appendChild(canvasElement);
             if (typeof G_vmlCanvasManager !== "undefined") {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
