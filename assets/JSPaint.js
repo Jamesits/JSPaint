@@ -18,7 +18,7 @@ var JSPaint = function () {
         curColor = "#000000",
         lastCanvasDrawRatio = 1,
         canvasDrawRatio = 1,
-        bgRefresh = true,
+        bgRefresh = false,
         bgRefreshInterval = 500,
         debugMsgRefreshInterval = 500,
         pixelRatioCheckInterval = 100,
@@ -229,7 +229,7 @@ var JSPaint = function () {
         },
 
         printDebugMsg = function () {
-            var text = "Optimal FPS: " + debug.fps.toFixed(2) + " EPS: " + debug.eps.toFixed(2) + " Refresh Interval: " + bgRefreshInterval.toFixed(2) + "ms Ratio: " + canvasDrawRatio + " " + debug.userMsg;
+            var text = "EPS: " + debug.eps.toFixed(2) + (bgRefresh ? " Optimal FPS: " + debug.fps.toFixed(2) + " Refresh Interval: " + bgRefreshInterval.toFixed(2) + "ms":" Refresh Disabled") + " Ratio: " + canvasDrawRatio + " " + debug.userMsg;
             debugDiv.innerHTML = text;
         },
 
@@ -250,6 +250,11 @@ var JSPaint = function () {
 
         doInitialSync = function (events) {
 
+        },
+
+        autoRefresh = function (status) {
+            if (status !== undefined) bgRefresh = !!status;
+            return bgRefresh;
         },
 
         init = function (element) {
@@ -296,5 +301,6 @@ var JSPaint = function () {
         clearCanvas: clearCanvas,
         updateUserDebugMsg: updateUserDebugMsg,
         doInitialSync: doInitialSync,
+        autoRefresh: autoRefresh,
     };
 };

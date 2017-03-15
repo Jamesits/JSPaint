@@ -22,6 +22,7 @@
                 <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" onchange="p.setSize(this.value)" />
                 <seperator>|</seperator>
                 <button id="clear" onclick="p.clearCanvas()">Clear Canvas</button>
+                <button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>
                 <seperator>|</seperator>
                 <span id="debug"></span>
             </div>
