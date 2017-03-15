@@ -2,7 +2,8 @@ var JSPaint = (function () {
 
     "use strict";
 
-    var contexts = {},
+    var canvasContext,
+        canvasDiv,
         clickEvents = [],
         clickEventsListeners = [],
         lastRedrawPtr = 0,
@@ -91,32 +92,32 @@ var JSPaint = (function () {
                 for (i = 0; i < clickEvents.length - lastRedrawPtr; i += 1) {
                     var currentRedrawPtr = i + lastRedrawPtr;
 
-                    contexts.drawing.beginPath();
+                    canvasContext.beginPath();
 
                     // Set the drawing radius
                     radius = clickEvents[currentRedrawPtr].clickSize;
 
                     // If dragging then draw a line between the two points
                     if (clickEvents[currentRedrawPtr].clickDrag && currentRedrawPtr) {
-                        contexts.drawing.moveTo(clickEvents[currentRedrawPtr - 1].clickX, clickEvents[currentRedrawPtr - 1].clickY);
+                        canvasContext.moveTo(clickEvents[currentRedrawPtr - 1].clickX, clickEvents[currentRedrawPtr - 1].clickY);
                     } else {
                         // The x position is moved over one pixel so a circle even if not dragging
-                        contexts.drawing.moveTo(clickEvents[currentRedrawPtr].clickX - 1, clickEvents[currentRedrawPtr].clickY);
+                        canvasContext.moveTo(clickEvents[currentRedrawPtr].clickX - 1, clickEvents[currentRedrawPtr].clickY);
                     }
-                    contexts.drawing.lineTo(clickEvents[currentRedrawPtr].clickX, clickEvents[currentRedrawPtr].clickY);
+                    canvasContext.lineTo(clickEvents[currentRedrawPtr].clickX, clickEvents[currentRedrawPtr].clickY);
 
                     // Set the drawing color
                     if (curTool === "eraser") {
-                        contexts.drawing.strokeStyle = 'white';
+                        canvasContext.strokeStyle = 'white';
                     } else {
-                        contexts.drawing.strokeStyle = "rgb(" + clickEvents[currentRedrawPtr].clickColor.r + ", " + clickEvents[currentRedrawPtr].clickColor.g + ", " + clickEvents[currentRedrawPtr].clickColor.b + ")";
+                        canvasContext.strokeStyle = "rgb(" + clickEvents[currentRedrawPtr].clickColor.r + ", " + clickEvents[currentRedrawPtr].clickColor.g + ", " + clickEvents[currentRedrawPtr].clickColor.b + ")";
                     }
 
-                    contexts.drawing.lineCap = "round";
-                    contexts.drawing.lineJoin = "round";
-                    contexts.drawing.lineWidth = radius;
-                    contexts.drawing.stroke();
-                    contexts.drawing.closePath();
+                    canvasContext.lineCap = "round";
+                    canvasContext.lineJoin = "round";
+                    canvasContext.lineWidth = radius;
+                    canvasContext.stroke();
+                    canvasContext.closePath();
                 }
             }
 
@@ -175,7 +176,7 @@ var JSPaint = (function () {
                     }
                 };
 
-            var gestureRecognizer = new Hammer(contexts.outline.canvas);
+            var gestureRecognizer = new Hammer(canvasContext.canvas);
             gestureRecognizer.get('pan').set({
                 direction: Hammer.DIRECTION_ALL,
                 threshold: 1,
@@ -199,35 +200,25 @@ var JSPaint = (function () {
             clickEventsListeners.push(f);
         },
 
-        onresize = function() {
-            drawingAreaWidth = document.getElementById('canvasDiv').offsetWidth;
-            drawingAreaHeight = document.getElementById('canvasDiv').offsetHeight;
-            for (var i in contexts) {
-                contexts[i].canvas.width = drawingAreaWidth;
-                contexts[i].canvas.height = drawingAreaHeight;
-            }
+        onresize = function(e) {
+            drawingAreaWidth = canvasDiv.offsetWidth;
+            drawingAreaHeight = canvasDiv.offsetHeight;
+            canvasContext.canvas.width = drawingAreaWidth;
+            canvasContext.canvas.height = drawingAreaHeight;
+            if (e) redraw();
         },
 
         init = function () {
+            canvasDiv = document.getElementById('canvasDiv');
             var canvasElement;
-
             canvasElement = document.createElement('canvas');
             canvasElement.setAttribute('id', 'drawing');
             canvasElement.setAttribute('class', 'jspaint');
-            document.getElementById('canvasDiv').appendChild(canvasElement);
+            canvasDiv.appendChild(canvasElement);
             if (typeof G_vmlCanvasManager !== "undefined") {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
             }
-            contexts.drawing = canvasElement.getContext("2d");
-
-            canvasElement = document.createElement('canvas');
-            canvasElement.setAttribute('id', 'outline');
-            canvasElement.setAttribute('class', 'jspaint');
-            document.getElementById('canvasDiv').appendChild(canvasElement);
-            if (typeof G_vmlCanvasManager !== "undefined") {
-                canvasElement = G_vmlCanvasManager.initElement(canvasElement);
-            }
-            contexts.outline = canvasElement.getContext("2d"); // Grab the 2d canvas context
+            canvasContext = canvasElement.getContext("2d");
 
             resourceLoaded();
         };
