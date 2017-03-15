@@ -32,10 +32,6 @@ html, body {
     width: 100%;
 }
 
-#toolbar {
-    min-height: 100px;
-}
-
 canvas.jspaint {
     position: absolute;
     min-height: 100px;
@@ -43,5 +39,4 @@ canvas.jspaint {
     top: 0;
     left: 0;
     width: 100%;
-    border: 1px solid red;
 }
