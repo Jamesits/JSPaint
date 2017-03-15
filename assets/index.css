@@ -40,3 +40,17 @@ canvas.jspaint {
     left: 0;
     width: 100%;
 }
+
+.background {
+    display: none;
+}
+
+#debug {
+    float: right;
+    padding-right: 10px;
+}
+
+seperator {
+    display: inline-block;
+    min-width: 50px;
+}

@@ -11,19 +11,26 @@
             <div id="canvasDiv"></div>
             <div id="toolbar">
                 <button id="draw" onclick="p.setTool('marker')">Draw</button>
+                <button id="erase" onclick="p.setTool('eraser')">Erase</button>
+                <seperator></seperator>
+                <button id="black" onclick="p.setColorFromRGB(0, 0, 0)">Black</button>
                 <button id="red" onclick="p.setColorFromRGB(255, 0, 0)">Red</button>
                 <button id="green" onclick="p.setColorFromRGB(0, 255, 0)">Green</button>
                 <button id="blue" onclick="p.setColorFromRGB(0, 0, 255)">Blue</button>
-                <button id="erase" onclick="p.setTool('eraser')">Erase</button>
+                <seperator></seperator>
                 <label for="strokeSize">Stroke size</label>
-                <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" onchange="p.setSize(this.value)"></input>
+                <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" onchange="p.setSize(this.value)" />
+                <seperator></seperator>
+                <button id="clear" onclick="p.clearCanvas()">Clear Canvas</button>
+                <seperator></seperator>
+                <span id="debug"></span>
             </div>
         </div>
         <!--[if lte IE 8]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
         <!--<script type="text/javascript" src="assets/hidpi-canvas.min.js"></script>-->
         <script type="text/javascript" src="assets/hammer.min.js"></script>
         <script type="text/javascript" src="assets/hammer-time.min.js"></script>
-        <!--<script src="https://cdn.wilddog.com/sdk/js/2.5.2/wilddog-sync.js"></script>-->
+        <script src="https://cdn.wilddog.com/sdk/js/2.5.2/wilddog-sync.js"></script>
         <script type="text/javascript" src="assets/JSPaint.js"></script>
         <script type="text/javascript" src="assets/main.js"></script>
     </body>

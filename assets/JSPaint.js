@@ -4,6 +4,8 @@ var JSPaint = function () {
 
     var canvasContext,
         canvasDiv,
+        bgCanvasContext,
+        debugDiv,
         clickEvents = [],
         clickEventListeners = [],
         lastRedrawPtr = 0,
@@ -15,6 +17,13 @@ var JSPaint = function () {
         drawingAreaHeight,
         curColor = "#000000",
         canvasDrawRatio = 1,
+        lastBackgroundFrame,
+        debug = {
+            fps: 0,
+            userMsg: "",
+        },
+        debugTimer,
+        redrawTimer,
 
         setTool = function (newTool) {
             curTool = newTool;
@@ -65,47 +74,64 @@ var JSPaint = function () {
             lastRedrawPtr = clickEvents.length;
         },
 
+        draw = function (canvasContext, currentStroke, lastStroke) {
+            if (currentStroke.clickTool === "clear") return;
+            canvasContext.beginPath();
+
+            // If dragging then draw a line between the two points
+            if (currentStroke.clickDrag && lastStroke && lastStroke.clickTool !== "clear") {
+                canvasContext.moveTo(lastStroke.clickX, lastStroke.clickY);
+            } else {
+                // The x position is moved over one pixel so a circle even if not dragging
+                canvasContext.moveTo(currentStroke.clickX - 1, currentStroke.clickY);
+            }
+            canvasContext.lineTo(currentStroke.clickX, currentStroke.clickY);
+
+            if (currentStroke.clickTool === "eraser") {
+                canvasContext.strokeStyle = 'white';
+            } else {
+                canvasContext.strokeStyle = currentStroke.clickColor;
+            }
+
+            canvasContext.lineCap = "round";
+            canvasContext.lineJoin = "round";
+            canvasContext.lineWidth = currentStroke.clickSize;
+            canvasContext.closePath();
+            canvasContext.stroke();
+        },
+
+        canvasAppend = function () {
+            for (var currentRedrawPtr = lastRedrawPtr; currentRedrawPtr < clickEvents.length; currentRedrawPtr += 1) {
+                draw(canvasContext, clickEvents[currentRedrawPtr], clickEvents[currentRedrawPtr - 1]);
+            }    
+            clearClick();
+        },
+
         // Redraws the canvas.
         redraw = function () {
-
+            var t0 = performance.now();
             // console.log("redraw", curTool, "last redraw to: ", lastRedrawPtr);
 
-            if (clickEvents.length - lastRedrawPtr > 0) {
+            if (clickEvents.length > 0) {
 
                 // For each point drawn
-                for (var i = 0; i < clickEvents.length - lastRedrawPtr; i += 1) {
-                    var currentRedrawPtr = i + lastRedrawPtr;
-                    // ignore out of canvas things
-                    if (clickEvents[currentRedrawPtr].clickX <= drawingAreaWidth
-                        && clickEvents[currentRedrawPtr].clickX >= 0
-                        && clickEvents[currentRedrawPtr].clickY <= drawingAreaHeight
-                        && clickEvents[currentRedrawPtr].clickY >= 0
-                    ) {
-                        canvasContext.beginPath();
-
-                        // If dragging then draw a line between the two points
-                        if (clickEvents[currentRedrawPtr].clickDrag && currentRedrawPtr) {
-                            canvasContext.moveTo(clickEvents[currentRedrawPtr - 1].clickX, clickEvents[currentRedrawPtr - 1].clickY);
-                        } else {
-                            // The x position is moved over one pixel so a circle even if not dragging
-                            canvasContext.moveTo(clickEvents[currentRedrawPtr].clickX - 1, clickEvents[currentRedrawPtr].clickY);
-                        }
-                        canvasContext.lineTo(clickEvents[currentRedrawPtr].clickX, clickEvents[currentRedrawPtr].clickY);
-
-                        if (clickEvents[currentRedrawPtr].clickTool === "eraser") {
-                            canvasContext.strokeStyle = 'white';
-                        } else {
-                            canvasContext.strokeStyle = clickEvents[currentRedrawPtr].clickColor;
-                        }
-
-                        canvasContext.lineCap = "round";
-                        canvasContext.lineJoin = "round";
-                        canvasContext.lineWidth = clickEvents[currentRedrawPtr].clickSize;
-                        canvasContext.closePath();
-                        canvasContext.stroke();
-                    }
+                for (var currentRedrawPtr = 0; currentRedrawPtr < clickEvents.length; currentRedrawPtr += 1) {
+                    draw(bgCanvasContext, clickEvents[currentRedrawPtr], clickEvents[currentRedrawPtr - 1]);
                 }
             }
+            lastBackgroundFrame = bgCanvasContext.getImageData(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
+            canvasContext.putImageData(lastBackgroundFrame, 0, 0);
+            var t1 = performance.now();
+            if (debug.fps == 0) {
+                debug.fps = 1000 / (t1 - t0);
+            } else {
+                debug.fps = (debug.fps + 1000 / (t1 - t0)) / 2;
+            }
+        },
+
+        autoRedraw = function () {
+            redraw();
+            redrawTimer = window.setTimeout(autoRedraw, 1/5);
         },
 
         // Add mouse and touch event listeners to the canvas
@@ -121,14 +147,14 @@ var JSPaint = function () {
                     var mouse = getCurrentMousePointerPos(e);
                     paint = true;
                     addClick(mouse.X, mouse.Y, false);
-                    redraw();
+                    canvasAppend();
                 },
 
                 dragDrawing = function (e) {
                     var mouse = getCurrentMousePointerPos(e);
                     if (paint) {
                         addClick(mouse.X, mouse.Y, true);
-                        redraw();
+                        canvasAppend();
                     }
                     // Prevent the whole page from dragging if on mobile
                     e.preventDefault();
@@ -136,7 +162,7 @@ var JSPaint = function () {
 
                 releaseDrawing = function () {
                     paint = false;
-                    redraw();
+                    canvasAppend();
                 },
 
                 cancelDrawing = function () {
@@ -159,7 +185,7 @@ var JSPaint = function () {
         // Calls the redraw function after all neccessary resources are loaded.
         resourceLoaded = function () {
             onresize();
-            redraw();
+            autoRedraw();
             createUserEvents();
         },
 
@@ -173,12 +199,40 @@ var JSPaint = function () {
             drawingAreaHeight = canvasDiv.offsetHeight;
             canvasContext.canvas.width = canvasDiv.offsetWidth;
             canvasContext.canvas.height = canvasDiv.offsetHeight;
+            bgCanvasContext.canvas.width = canvasDiv.offsetWidth;
+            bgCanvasContext.canvas.height = canvasDiv.offsetHeight;
             if (e) redraw();
+        },
+
+        printDebugMsg = function () {
+            var text = "FPS: " + debug.fps + " " + debug.userMsg;
+            debugDiv.innerHTML = text;
+        },
+
+        updateUserDebugMsg = function (text) {
+            debug.userMsg = text;
+        },
+
+        clearCanvas = function () {
+            clickEvents.length = 0;
+            lastRedrawPtr = 0;
+            canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+            bgCanvasContext.clearRect(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
+            for (var i in clickEventListeners) {
+                clickEventListeners[i](event, clickEvents);
+            }
+            //redraw();
+        },
+
+        doInitialSync = function (events) {
+            
         },
 
         init = function (element) {
             canvasDiv = element;
             var canvasElement;
+
+            // create visible canvas
             canvasElement = document.createElement('canvas');
             canvasElement.setAttribute('id', 'drawing');
             canvasElement.setAttribute('class', 'jspaint');
@@ -187,6 +241,21 @@ var JSPaint = function () {
                 canvasElement = G_vmlCanvasManager.initElement(canvasElement);
             }
             canvasContext = canvasElement.getContext("2d");
+
+            // create background canvas
+            canvasElement = document.createElement('canvas');
+            canvasElement.setAttribute('id', 'bgdrawing');
+            canvasElement.setAttribute('class', 'background');
+            canvasDiv.appendChild(canvasElement);
+            if (typeof G_vmlCanvasManager !== "undefined") {
+                canvasElement = G_vmlCanvasManager.initElement(canvasElement);
+            }
+            bgCanvasContext = canvasElement.getContext("2d");
+
+            debugDiv = document.getElementById("debug");
+
+            debugTimer = window.setInterval(printDebugMsg, 500);
+
             resourceLoaded();
         };
 
@@ -198,5 +267,8 @@ var JSPaint = function () {
         setColorFromRGB: setColorFromRGB,
         setSize: setSize,
         addClickEventListener: addClickEventListener,
+        clearCanvas: clearCanvas,
+        updateUserDebugMsg: updateUserDebugMsg,
+        doInitialSync: doInitialSync,
     };
 };
