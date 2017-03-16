@@ -88,7 +88,6 @@ var onReady = function () {
 
         ws.addEventListener('message', function (event) {
             var d = JSON.parse(event.data)
-            console.log("WebSocket received: ", d);
             p.addClickEvent(d);
         });
 
