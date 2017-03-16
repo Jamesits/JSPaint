@@ -1,4 +1,7 @@
 var onReady = function () {
+
+    "use strict";
+    
     // global consts
     const roomid = 0;
 
@@ -23,6 +26,7 @@ var onReady = function () {
         p.updateUserDebugMsg(text);
     }
     var ws_location = "ws://" + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
+    var ws_waiting_list;
     var wsSetup = function () {
         ws = new WebSocket(ws_location + "?room=" + roomid + "&id=" + uuid);
         
