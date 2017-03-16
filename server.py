@@ -22,7 +22,7 @@ def updateHandler(client, message):
     room_history[client.room].append(message)
     for c_index in clients[client.room]:
         c = clients[client.room][c_index]
-        if not (c["id"] == client.id):
+        if c["id"] != client.id:
             c["buffer"].append(message)
 
 # we gonna store clients in dictionary..
@@ -33,6 +33,7 @@ commands = {
     "PULL": pullHandler,
     "HELLO": nullHandler,
 }
+push_interval = 0.1
 
 class IndexHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -65,12 +66,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             m['clientId'] = self.id
             m['room'] = self.room
             print("UPDATE {}".format(m))
-            updateHandler(self, message)
+            updateHandler(self, m)
         except json.decoder.JSONDecodeError:
             print("COMMAND {} from {}".format(message, self.id))
             if message in commands:
                 commands[message](self, message)
-            
 
     def on_close(self):
         print("BYE")
@@ -79,17 +79,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     @classmethod
     def server_push(cls):
-        print("PUSH")
         for room in clients:
             for client in clients[room]:
                 c = clients[room][client]
                 while len(c["buffer"]):
-                    print("PUSH {}, {} messages remaining".format(c["id"],
-                    len(c["buffer"])))
+                    print("PUSH {}, {} messages remaining".format(
+                        c["id"],
+                        len(c["buffer"])
+                        ))
                     c["object"].write_message(c["buffer"].pop(0))
         # schedule next push
         tornado.ioloop.IOLoop.instance().add_timeout(
-            datetime.timedelta(seconds=1), WebSocketHandler.server_push)
+            datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
@@ -104,5 +105,5 @@ if __name__ == '__main__':
     parse_command_line()
     app.listen(options.port)
     tornado.ioloop.IOLoop.instance().add_timeout(
-        datetime.timedelta(seconds=1), WebSocketHandler.server_push)
+        datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
     tornado.ioloop.IOLoop.instance().start()

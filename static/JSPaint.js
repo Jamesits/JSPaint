@@ -121,9 +121,19 @@ var JSPaint = function () {
             // console.log("redraw", curTool, "last redraw to: ", lastRedrawPtr);
 
             var sort_by_server_timestamp = function (a, b) {
-                var a_time = a.serverTime || a.clientTime;
-                var b_time = b.serverTime || b.clientTime;
-                return a_time - b_time;
+                var a_time = a.serverTime || a.clientTime || (a.x + a.y);
+                var b_time = b.serverTime || b.clientTime || (b.x + b.y);
+                var ret = a_time - b_time;
+                if (ret == 0) {
+                    a_time += a.clientTime;
+                    b_time += b.clientTime;
+                    ret = a_time - b_time;
+                }
+                if (ret == 0) {
+                    a_time = a.x + a.y;
+                    b_time = b.x + b.y;
+                    ret = a_time - b_time;
+                }
             };
 
             clickEvents.sort(sort_by_server_timestamp);
