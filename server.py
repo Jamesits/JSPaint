@@ -20,20 +20,25 @@ class IndexHandler(tornado.web.RequestHandler):
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
-        self.id = self.get_argument("Id")
+        self.room = int(self.get_argument("room"))
+        self.id = int(self.get_argument("id"))
         self.stream.set_nodelay(True)
-        clients[self.id] = {"id": self.id, "object": self}
+        print("client hello: room {} id {}".format(self.room, self.id))
+        if self.room not in clients:
+            clients[self.room] = dict()
+        clients[self.room][self.id] = {"id": self.id, "object": self}
 
     def on_message(self, message):        
         """
         when we receive some message we want some message handler..
         for this example i will just print message to console
         """
-        print("Client %s received a message : %s" % (self.id, message))
+        print("Client {} received a message : {}".format(self.id, message))
         
     def on_close(self):
-        if self.id in clients:
-            del clients[self.id]
+        print("client bye")
+        if self.id in clients[self.room]:
+            del clients[self.room][self.id]
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
@@ -41,7 +46,7 @@ settings = {
 
 app = tornado.web.Application([
     (r'/', IndexHandler),
-    (r'/', WebSocketHandler),
+    (r'/ws', WebSocketHandler),
 ], **settings)
 
 if __name__ == '__main__':
