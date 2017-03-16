@@ -32,7 +32,7 @@ var onReady = function () {
             ws_status = "connected";
             updateUserDebugMsg();
             console.log("WebSocket connected: ", event);
-            ws_reconnect_interval = 500;
+            ws_reconnect_interval = 0;
         });
 
         // server disconnect
@@ -49,7 +49,7 @@ var onReady = function () {
             updateUserDebugMsg();
             console.log("WebSocket error: ", event);
             if (ws_reconnect_interval <= 32000) {
-                ws_reconnect_interval = ws_reconnect_interval * 2;
+                ws_reconnect_interval = ws_reconnect_interval + 500;
             }
         });
 
