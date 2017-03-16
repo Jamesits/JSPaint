@@ -1,3 +1,4 @@
+var p;
 var onReady = function () {
 
     "use strict";
@@ -6,7 +7,7 @@ var onReady = function () {
     const roomid = 0;
 
     // set up paint canvas
-    var p = JSPaint();
+    p = JSPaint();
     p.init(document.getElementById('canvasDiv'));
 
     // generate UUID for this client

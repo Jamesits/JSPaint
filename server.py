@@ -2,6 +2,8 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 import os
+import time
+import json
 
 from tornado.options import define, options, parse_command_line
 
@@ -24,7 +26,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.room = self.get_argument("room")
         self.id = self.get_argument("id")
         self.stream.set_nodelay(True)
-        print("client hello: room {} id {}".format(self.room, self.id))
+        print("HELLO room {} id {}".format(self.room, self.id))
         if self.room not in clients:
             clients[self.room] = dict()
         clients[self.room][self.id] = {"id": self.id, "object": self}
@@ -34,10 +36,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         when we receive some message we want some message handler..
         for this example i will just print message to console
         """
-        print("Client {} received a message : {}".format(self.id, message))
+        m = json.loads(message)
+        m['serverTime'] = int(time.time() * 1000)
+        m['clientId'] = self.id
+        m['room'] = self.room
+        print("UPDATE {}".format(m))
 
     def on_close(self):
-        print("client bye")
+        print("BYE")
         if self.id in clients[self.room]:
             del clients[self.room][self.id]
 
