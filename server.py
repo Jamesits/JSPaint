@@ -115,3 +115,4 @@ if __name__ == '__main__':
     tornado.ioloop.IOLoop.instance().add_timeout(
         datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
     tornado.ioloop.IOLoop.instance().start()
+    print("Server listening on port {}...".format(options.port))
