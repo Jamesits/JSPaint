@@ -5,6 +5,7 @@ import os
 import time
 import datetime
 import json
+import copy
 
 from tornado.options import define, options, parse_command_line
 
@@ -14,13 +15,13 @@ def nullHandler(client, message):
     pass
 
 def pullHandler(client, message):
-    client.buffer = room_history[client.room] + client.buffer
+    clients[client.room][client.id]["buffer"] = room_history[client.room] + \
+        clients[client.room][client.id]["buffer"]
 
 def updateHandler(client, message):
     room_history[client.room].append(message)
     for c_index in clients[client.room]:
         c = clients[client.room][c_index]
-        print(c)
         if not (c["id"] == client.id):
             c["buffer"].append(message)
 
@@ -29,7 +30,7 @@ clients = dict()
 room_history = dict()
 commands = {
     "INIT": nullHandler,
-    "PULL": nullHandler,
+    "PULL": pullHandler,
     "HELLO": nullHandler,
 }
 

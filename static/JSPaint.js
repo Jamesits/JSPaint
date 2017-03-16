@@ -18,8 +18,8 @@ var JSPaint = function () {
         curColor = "#000000",
         lastdpiPercentage = 1,
         dpiPercentage = 1,
-        bgRefresh = false,
-        bgRefreshInterval = 500,
+        bgRefresh = true,
+        bgRefreshInterval = 50,
         debugMsgRefreshInterval = 500,
         pixelRatioCheckInterval = 100,
         lastBackgroundFrame,
@@ -119,6 +119,14 @@ var JSPaint = function () {
         redraw = function () {
             var t0 = performance.now();
             // console.log("redraw", curTool, "last redraw to: ", lastRedrawPtr);
+
+            var sort_by_server_timestamp = function (a, b) {
+                var a_time = a.serverTime || a.clientTime;
+                var b_time = b.serverTime || b.clientTime;
+                return a_time - b_time;
+            };
+
+            clickEvents.sort(sort_by_server_timestamp);
 
             if (clickEvents.length > 0) {
 
@@ -221,6 +229,10 @@ var JSPaint = function () {
             }
         },
 
+        addClickEvent = function (e) {
+            clickEvents.push(e);
+        },
+
         onresize = function (e) {
             dpiPercentage = getPixelRatio();
             drawingAreaWidth = canvasDiv.offsetWidth;
@@ -307,5 +319,6 @@ var JSPaint = function () {
         updateUserDebugMsg: updateUserDebugMsg,
         doInitialSync: doInitialSync,
         autoRefresh: autoRefresh,
+        addClickEvent: addClickEvent,
     };
 };

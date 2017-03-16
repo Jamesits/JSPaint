@@ -87,7 +87,9 @@ var onReady = function () {
         });
 
         ws.addEventListener('message', function (event) {
-            console.log("WebSocket received: ", JSON.parse(event.data));
+            var d = JSON.parse(event.data)
+            console.log("WebSocket received: ", d);
+            p.addClickEvent(d);
         });
 
         return ws;
