@@ -16,8 +16,8 @@ var JSPaint = function () {
         drawingAreaWidth,
         drawingAreaHeight,
         curColor = "#000000",
-        lastCanvasDrawRatio = 1,
-        canvasDrawRatio = 1,
+        lastdpiPercentage = 1,
+        dpiPercentage = 1,
         bgRefresh = false,
         bgRefreshInterval = 500,
         debugMsgRefreshInterval = 500,
@@ -46,7 +46,7 @@ var JSPaint = function () {
         },
 
         setSize = function (newSize) {
-            curSize = newSize / lastCanvasDrawRatio * canvasDrawRatio;
+            curSize = newSize / lastdpiPercentage * dpiPercentage;
         },
 
         getPixelRatio = function () {
@@ -62,14 +62,14 @@ var JSPaint = function () {
 
         addClick = function (x, y, dragging) {
             event = {
-                clickX: x,
-                clickY: y,
-                clickTool: curTool,
-                clickColor: curColor,
-                clickSize: curSize,
-                clickDrag: dragging,
-                canvasDrawRatio: canvasDrawRatio,
-                timestamp: Date.now(),
+                x: x,
+                y: y,
+                tool: curTool,
+                color: curColor,
+                size: curSize,
+                draw: dragging,
+                dpiPercentage: dpiPercentage,
+                clientTime: Date.now(),
             };
             clickEvents.push(event);
             for (var i in clickEventListeners) {
@@ -83,27 +83,27 @@ var JSPaint = function () {
         },
 
         draw = function (canvasContext, currentStroke, lastStroke) {
-            if (currentStroke.clickTool === "clear") return;
+            if (currentStroke.tool === "clear") return;
             canvasContext.beginPath();
 
             // If dragging then draw a line between the two points
-            if (currentStroke.clickDrag && lastStroke && lastStroke.clickTool !== "clear") {
-                canvasContext.moveTo(lastStroke.clickX * canvasDrawRatio, lastStroke.clickY * canvasDrawRatio);
+            if (currentStroke.draw && lastStroke && lastStroke.tool !== "clear") {
+                canvasContext.moveTo(lastStroke.x * dpiPercentage, lastStroke.y * dpiPercentage);
             } else {
                 // The x position is moved over one pixel so a circle even if not dragging
-                canvasContext.moveTo((currentStroke.clickX - 1) * canvasDrawRatio, currentStroke.clickY * canvasDrawRatio);
+                canvasContext.moveTo((currentStroke.x - 1) * dpiPercentage, currentStroke.y * dpiPercentage);
             }
-            canvasContext.lineTo(currentStroke.clickX * canvasDrawRatio, currentStroke.clickY * canvasDrawRatio);
+            canvasContext.lineTo(currentStroke.x * dpiPercentage, currentStroke.y * dpiPercentage);
 
-            if (currentStroke.clickTool === "eraser") {
+            if (currentStroke.tool === "eraser") {
                 canvasContext.strokeStyle = 'white';
             } else {
-                canvasContext.strokeStyle = currentStroke.clickColor;
+                canvasContext.strokeStyle = currentStroke.color;
             }
 
             canvasContext.lineCap = "round";
             canvasContext.lineJoin = "round";
-            canvasContext.lineWidth = currentStroke.clickSize / currentStroke.canvasDrawRatio * canvasDrawRatio;
+            canvasContext.lineWidth = currentStroke.size / currentStroke.dpiPercentage * dpiPercentage;
             canvasContext.closePath();
             canvasContext.stroke();
         },
@@ -209,27 +209,27 @@ var JSPaint = function () {
         },
 
         checkPixelRatioChange = function () {
-            canvasDrawRatio = getPixelRatio();
-            if (canvasDrawRatio !== lastCanvasDrawRatio) {
+            dpiPercentage = getPixelRatio();
+            if (dpiPercentage !== lastdpiPercentage) {
                 setSize(curSize);
                 onresize();
-                lastCanvasDrawRatio = canvasDrawRatio;
+                lastdpiPercentage = dpiPercentage;
             }
         },
 
         onresize = function (e) {
-            canvasDrawRatio = getPixelRatio();
+            dpiPercentage = getPixelRatio();
             drawingAreaWidth = canvasDiv.offsetWidth;
             drawingAreaHeight = canvasDiv.offsetHeight;
-            canvasContext.canvas.width = canvasDiv.offsetWidth * canvasDrawRatio;
-            canvasContext.canvas.height = canvasDiv.offsetHeight * canvasDrawRatio;
-            bgCanvasContext.canvas.width = canvasDiv.offsetWidth * canvasDrawRatio;
-            bgCanvasContext.canvas.height = canvasDiv.offsetHeight * canvasDrawRatio;
+            canvasContext.canvas.width = canvasDiv.offsetWidth * dpiPercentage;
+            canvasContext.canvas.height = canvasDiv.offsetHeight * dpiPercentage;
+            bgCanvasContext.canvas.width = canvasDiv.offsetWidth * dpiPercentage;
+            bgCanvasContext.canvas.height = canvasDiv.offsetHeight * dpiPercentage;
             if (e) redraw();
         },
 
         printDebugMsg = function () {
-            var text = "EPS: " + debug.eps.toFixed(2) + (bgRefresh ? " Optimal FPS: " + debug.fps.toFixed(2) + " Refresh Interval: " + bgRefreshInterval.toFixed(2) + "ms" : " Refresh Disabled") + " Ratio: " + canvasDrawRatio + " Strokes: " + clickEvents.length + " " + debug.userMsg;
+            var text = "EPS: " + debug.eps.toFixed(2) + (bgRefresh ? " Optimal FPS: " + debug.fps.toFixed(2) + " Refresh Interval: " + bgRefreshInterval.toFixed(2) + "ms" : " Refresh Disabled") + " Ratio: " + dpiPercentage + " Strokes: " + clickEvents.length + " " + debug.userMsg;
             debugDiv.innerHTML = text;
         },
 
