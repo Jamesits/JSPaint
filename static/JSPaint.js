@@ -268,9 +268,9 @@ var JSPaint = function () {
             lastRedrawPtr = 0;
             canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
             bgCanvasContext.clearRect(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
-            for (var i in clickEventListeners) {
-                clickEventListeners[i](event, clickEvents);
-            }
+            // for (var i in clickEventListeners) {
+            //     clickEventListeners[i](event, clickEvents);
+            // }
             //redraw();
         },
 

@@ -25,6 +25,13 @@ def updateHandler(client, message):
         if c["id"] != client.id:
             c["buffer"].append(message)
 
+def clearHandler(client, message):
+    room_history[client.room] = list()
+    for c_index in clients[client.room]:
+        c = clients[client.room][c_index]
+        c["buffer"] = list()
+        c["object"].write_message("CLEAR")
+
 # we gonna store clients in dictionary..
 clients = dict()
 room_history = dict()
@@ -32,8 +39,9 @@ commands = {
     "INIT": nullHandler,
     "PULL": pullHandler,
     "HELLO": nullHandler,
+    "CLEAR": clearHandler
 }
-push_interval = 0.1
+push_interval = 0.01
 
 class IndexHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous

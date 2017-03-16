@@ -30,6 +30,13 @@ var onReady = function () {
     }
     var ws_location = "ws://" + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
     var ws_waiting_list = [];
+    var send = function (msg) {
+        if (ws_is_connected) {
+            ws.send(msg);
+        } else {
+            ws_waiting_list.push(msg);
+        }
+    };
     var wsSetup = function () {
         ws = new WebSocket(ws_location + "?room=" + roomid + "&id=" + uuid);
         
@@ -79,16 +86,25 @@ var onReady = function () {
         p.clearClickEventListener();
         p.addClickEventListener(function (e, f) {
             var msg = JSON.stringify(e);
-            if (ws_is_connected) {
-                ws.send(msg);
-            } else {
-                ws_waiting_list.push(msg);
-            }
+            send(msg);
         });
 
         ws.addEventListener('message', function (event) {
-            var d = JSON.parse(event.data)
-            p.addClickEvent(d);
+            try {
+                var d = JSON.parse(event.data)
+                p.addClickEvent(d);
+            } catch (e){
+                // got control message
+                if (event.data === "CLEAR") {
+                    p.clearCanvas();
+                }
+            }
+        });
+
+        // set up UI event listeners
+        document.getElementById("clear").addEventListener("click", function () {
+            send("CLEAR");
+            p.clearCanvas();
         });
 
         return ws;
