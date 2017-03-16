@@ -28,7 +28,7 @@ var onReady = function () {
         var text = "WebSocket: " + ws_status;
         p.updateUserDebugMsg(text);
     }
-    var ws_location = "ws://" + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
+    var ws_location = (location.protocol.toLowerCase().startsWith("https")?"wss://":"ws://") + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
     var ws_waiting_list = [];
     var send = function (msg) {
         if (ws_is_connected) {
