@@ -19,6 +19,7 @@ var onReady = function () {
 
     // set up websocket
     var ws_status = "disconnected";
+    var ws_is_first_connect = true;
     var ws_is_connected = false;
     var ws_reconnect_interval;
     var ws_timer;
@@ -35,16 +36,23 @@ var onReady = function () {
 
         // connected
         ws.addEventListener('open', function (event) {
-            ws_status = "connected, sending log...";
             ws_is_connected = true;
+            ws_reconnect_interval = 0;
+            ws.send("INIT");
+            if (ws_is_first_connect) {
+                ws_status = "connected, pulling log...";
+                ws.send("PULL");
+            }
+            ws_status = "connected, sending log...";
             updateUserDebugMsg();
             console.log("WebSocket connected: ", event);
-            ws_reconnect_interval = 0;
             while (ws_waiting_list.length > 0) {
                 ws.send(ws_waiting_list.shift());
             }
             ws_status = "connected";
             updateUserDebugMsg();
+            ws.send("HELLO");
+            ws_is_first_connect = false;
         });
 
         // server disconnect
