@@ -208,6 +208,10 @@ var JSPaint = function () {
             clickEventListeners.push(f);
         },
 
+        clearClickEventListener = function () {
+            clickEventListeners.length = 0;
+        },
+
         checkPixelRatioChange = function () {
             dpiPercentage = getPixelRatio();
             if (dpiPercentage !== lastdpiPercentage) {
@@ -298,6 +302,7 @@ var JSPaint = function () {
         setColorFromRGB: setColorFromRGB,
         setSize: setSize,
         addClickEventListener: addClickEventListener,
+        clearClickEventListener: clearClickEventListener,
         clearCanvas: clearCanvas,
         updateUserDebugMsg: updateUserDebugMsg,
         doInitialSync: doInitialSync,
