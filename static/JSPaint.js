@@ -143,10 +143,12 @@ var JSPaint = function () {
             }
             canvasContext.lineTo(currentStroke.x * dpiPercentage, currentStroke.y * dpiPercentage);
 
+            canvasContext.strokeStyle = currentStroke.color;
+
             if (currentStroke.tool === "eraser") {
-                canvasContext.strokeStyle = 'white';
+                canvasContext.globalCompositeOperation = "destination-out";
             } else {
-                canvasContext.strokeStyle = currentStroke.color;
+                canvasContext.globalCompositeOperation = "source-over";
             }
 
             canvasContext.lineCap = "round";
