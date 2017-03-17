@@ -205,15 +205,19 @@ var JSPaint = function () {
             debug.fps = (debug.fps + 1000 / (t1 - t0)) / 2;
         },
 
-        autoRedraw = async function () {
-            if (bgRefresh) redraw();
-            redrawTimer = window.setTimeout(autoRedraw, bgRefreshInterval);
+        autoRedraw = function () {
+            if (bgRefresh) window.setTimeout(function(){
+                redraw();
+                redrawTimer = window.setTimeout(autoRedraw, bgRefreshInterval);
+            }, 1);
         },
 
-        calcEventRate = async function() {
-            var current_time = performance.now();
-            debug.eps = (debug.eps + 1000 / (current_time - debug.lastEvent)) / 2;
-            debug.lastEvent = current_time;
+        calcEventRate = function() {
+            window.setTimeout(function() {
+                var current_time = performance.now();
+                debug.eps = (debug.eps + 1000 / (current_time - debug.lastEvent)) / 2;
+                debug.lastEvent = current_time;
+            }, 1);
         },
 
         // Add mouse and touch event listeners to the canvas
