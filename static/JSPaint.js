@@ -32,7 +32,7 @@ var JSPaint = function () {
         return result;
     };
 
-    Array.prototype.mergeSort = function (arr, compareFn) {
+    var mergeSort = function (arr, compareFn) {
         if (arr.length < 2) {
             return arr;
         }
@@ -184,7 +184,7 @@ var JSPaint = function () {
                 }
             };
 
-            clickEvents.mergeSort(sort_by_server_timestamp);
+            mergeSort(clickEvents, sort_by_server_timestamp);
 
             if (clickEvents.length > 0) {
 
