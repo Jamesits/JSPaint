@@ -2,6 +2,54 @@ var JSPaint = function () {
 
     "use strict";
 
+    // merge sort
+    // from https://github.com/millermedeiros/amd-utils/blob/master/src/array/sort.js
+
+    var defaultCompare = function (a, b) {
+        return a < b ? -1 : (a > b ? 1 : 0);
+    };
+
+    var merge = function (left, right, compareFn) {
+        var result = [];
+
+        while (left.length && right.length) {
+            if (compareFn(left[0], right[0]) <= 0) {
+                // if 0 it should preserve same order (stable)
+                result.push(left.shift());
+            } else {
+                result.push(right.shift());
+            }
+        }
+
+        if (left.length) {
+            result.push.apply(result, left);
+        }
+
+        if (right.length) {
+            result.push.apply(result, right);
+        }
+
+        return result;
+    };
+
+    Array.prototype.mergeSort = function (arr, compareFn) {
+        if (arr.length < 2) {
+            return arr;
+        }
+
+        if (compareFn == null) {
+            compareFn = defaultCompare;
+        }
+
+        var mid, left, right;
+
+        mid = ~~(arr.length / 2);
+        left = mergeSort(arr.slice(0, mid), compareFn);
+        right = mergeSort(arr.slice(mid, arr.length), compareFn);
+
+        return merge(left, right, compareFn);
+    };
+
     var canvasContext,
         canvasDiv,
         bgCanvasContext,
@@ -136,7 +184,7 @@ var JSPaint = function () {
                 }
             };
 
-            clickEvents.sort(sort_by_server_timestamp);
+            clickEvents.mergeSort(sort_by_server_timestamp);
 
             if (clickEvents.length > 0) {
 
