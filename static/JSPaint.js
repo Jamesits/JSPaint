@@ -2,9 +2,10 @@ var JSPaint = function () {
 
     "use strict";
 
+    // helper functions
+
     // merge sort
     // from https://github.com/millermedeiros/amd-utils/blob/master/src/array/sort.js
-
     var mergeSort = function (arr, compareFn) {
         var defaultCompare = function (a, b) {
             return a < b ? -1 : (a > b ? 1 : 0);
@@ -50,6 +51,7 @@ var JSPaint = function () {
         return merge(left, right, compareFn);
     };
 
+    // module global variables
     var canvasContext,
         canvasDiv,
         bgCanvasContext,
@@ -82,6 +84,7 @@ var JSPaint = function () {
         redrawTimer,
         devicePixelRatioCheckTimer,
 
+        // pen property setter
         setTool = function (newTool) {
             curTool = newTool;
         },
@@ -98,6 +101,7 @@ var JSPaint = function () {
             curSize = newSize / lastdpiPercentage * dpiPercentage;
         },
 
+        // canvas internal
         getPixelRatio = function () {
             var backingStore = canvasContext.backingStorePixelRatio ||
                 canvasContext.webkitBackingStorePixelRatio ||
@@ -278,6 +282,7 @@ var JSPaint = function () {
             createUserEvents();
         },
 
+        // event listeners
         addEventListener = function (e, f) {
             if (eventListeners[e]) {
                 eventListeners[e].push(f);
