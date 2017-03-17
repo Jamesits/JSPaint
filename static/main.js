@@ -3,6 +3,11 @@ var onReady = function () {
 
     "use strict";
 
+    // check URL params
+    var getURLParameter = function (name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+    }
+
     // set up paint canvas
     p = JSPaint();
     p.init(document.getElementById('canvasDiv'));
@@ -18,7 +23,7 @@ var onReady = function () {
     var ws_location = (location.protocol.toLowerCase().startsWith("https")?"wss://":"ws://") + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
 
     var s = JSPaintSync(p, ws_location, {
-        room: 0,
+        room: getURLParameter('room') || 0,
         id: uuid,
     });
 
