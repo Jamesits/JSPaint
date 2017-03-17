@@ -11,6 +11,9 @@ from tornado.options import define, options, parse_command_line
 
 define("port", default=80, help="run on the given port", type=int)
 
+def getServerTimestamp():
+    return int(time.time() * 1000)
+
 def nullHandler(client, message):
     pass
 
@@ -30,7 +33,7 @@ def clearHandler(client, message):
     for c_index in clients[client.room]:
         c = clients[client.room][c_index]
         c["buffer"] = list()
-        c["object"].write_message("CLEAR")
+        c["object"].write_message("CLEAR " + str(getServerTimestamp()))
 
 # we gonna store clients in dictionary..
 clients = dict()
@@ -70,7 +73,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         try:
             m = json.loads(message)
-            m['serverTime'] = int(time.time() * 1000)
+            m['serverTime'] = getServerTimestamp()
             m['clientId'] = self.id
             m['room'] = self.room
             print("UPDATE {}".format(m))

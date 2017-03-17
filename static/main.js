@@ -40,11 +40,7 @@ var onReady = function () {
     var sendControlMsg = function (msg, args) {
         var t = msg + " " + Date.now();
         if (args) t = t + " " + args;
-        if (ws_is_connected) {
-            ws.send(t);
-        } else {
-            ws_waiting_list.push(t);
-        }
+        send(t);
     }
     var wsSetup = function () {
         ws_status = "initializating...";
@@ -75,8 +71,8 @@ var onReady = function () {
 
         // server disconnect
         ws.addEventListener('close', function (event) {
-            ws_status = "disconnected, reconnect interval " + ws_reconnect_interval + "ms";
             ws_is_connected = false;
+            ws_status = "disconnected, reconnect interval " + ws_reconnect_interval + "ms";
             updateUserDebugMsg();
             // console.log("WebSocket close: ", event, ws_reconnect_interval);
             ws_timer = setTimeout(wsSetup, ws_reconnect_interval);
@@ -84,8 +80,8 @@ var onReady = function () {
 
         // connection failure
         ws.addEventListener('error', function (event) {
-            ws_status = "error";
             ws_is_connected = false;
+            ws_status = "error";
             updateUserDebugMsg();
             // console.log("WebSocket error: ", event);
             if (ws_reconnect_interval <= 32000) {
@@ -106,8 +102,9 @@ var onReady = function () {
                 p.addClickEvent(d);
             } catch (e){
                 // got control message
-                if (event.data === "CLEAR") {
-                    p.clearCanvas();
+                var msg = event.data.split(" ");
+                if (msg[0] === "CLEAR") {
+                    p.clearCanvas(msg[1]);
                 }
             }
         });

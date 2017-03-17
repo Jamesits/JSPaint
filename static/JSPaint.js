@@ -168,6 +168,9 @@ var JSPaint = function () {
             var t0 = performance.now();
             // console.log("redraw", curTool, "last redraw to: ", lastRedrawPtr);
 
+            // clear canvas
+            bgCanvasContext.clearRect(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
+
             var sort_by_server_timestamp = function (a, b) {
                 var a_time = a.serverTime || a.clientTime || (a.x + a.y);
                 var b_time = b.serverTime || b.clientTime || (b.x + b.y);
@@ -311,15 +314,19 @@ var JSPaint = function () {
             debug.userMsg = text;
         },
 
-        clearCanvas = function () {
-            clickEvents.length = 0;
+        clearCanvas = function (timestamp) {
+            if (timestamp) {
+                clickEvents = clickEvents.filter(function (e) {
+                    return
+                    (e.serverTime && e.serverTime <= timestamp)
+                        || (e.clientTime && e.clientTime <= timestamp);
+                })
+            } else {
+                clickEvents.length = 0;
+            }
             lastRedrawPtr = 0;
             canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
-            bgCanvasContext.clearRect(0, 0, bgCanvasContext.canvas.width, bgCanvasContext.canvas.height);
-            // for (var i in clickEventListeners) {
-            //     clickEventListeners[i](event, clickEvents);
-            // }
-            //redraw();
+            redraw();
         },
 
         doInitialSync = function (events) {
