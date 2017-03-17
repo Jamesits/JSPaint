@@ -94,8 +94,8 @@ var onReady = function () {
         });
 
         // set up draw event listener
-        p.clearClickEventListener();
-        p.addClickEventListener(function (e, f) {
+        p.clearEventListener('click');
+        p.addEventListener('click', function (e, f) {
             var msg = JSON.stringify(e);
             send(msg);
         });

@@ -5,34 +5,34 @@ var JSPaint = function () {
     // merge sort
     // from https://github.com/millermedeiros/amd-utils/blob/master/src/array/sort.js
 
-    var defaultCompare = function (a, b) {
-        return a < b ? -1 : (a > b ? 1 : 0);
-    };
-
-    var merge = function (left, right, compareFn) {
-        var result = [];
-
-        while (left.length && right.length) {
-            if (compareFn(left[0], right[0]) <= 0) {
-                // if 0 it should preserve same order (stable)
-                result.push(left.shift());
-            } else {
-                result.push(right.shift());
-            }
-        }
-
-        if (left.length) {
-            result.push.apply(result, left);
-        }
-
-        if (right.length) {
-            result.push.apply(result, right);
-        }
-
-        return result;
-    };
-
     var mergeSort = function (arr, compareFn) {
+        var defaultCompare = function (a, b) {
+            return a < b ? -1 : (a > b ? 1 : 0);
+        };
+
+        var merge = function (left, right, compareFn) {
+            var result = [];
+
+            while (left.length && right.length) {
+                if (compareFn(left[0], right[0]) <= 0) {
+                    // if 0 it should preserve same order (stable)
+                    result.push(left.shift());
+                } else {
+                    result.push(right.shift());
+                }
+            }
+
+            if (left.length) {
+                result.push.apply(result, left);
+            }
+
+            if (right.length) {
+                result.push.apply(result, right);
+            }
+
+            return result;
+        };
+
         if (arr.length < 2) {
             return arr;
         }
@@ -56,6 +56,7 @@ var JSPaint = function () {
         debugDiv,
         clickEvents = [],
         clickEventListeners = [],
+        eventListeners = {},
         lastRedrawPtr = 0,
         gestureRecognizer,
         paint = false,
@@ -120,9 +121,7 @@ var JSPaint = function () {
                 clientTime: Date.now(),
             };
             clickEvents.push(event);
-            for (var i in clickEventListeners) {
-                clickEventListeners[i](event, clickEvents);
-            }
+            triggerEvent('click', event, clickEvents);
         },
 
         clearClick = function () {
@@ -279,12 +278,42 @@ var JSPaint = function () {
             createUserEvents();
         },
 
-        addClickEventListener = function (f) {
-            clickEventListeners.push(f);
+        addEventListener = function (e, f) {
+            if (eventListeners[e]) {
+                eventListeners[e].push(f);
+            } else {
+                eventListeners[e] = [f];
+            }
         },
 
-        clearClickEventListener = function () {
-            clickEventListeners.length = 0;
+        removeEventListener = function (e, f) {
+            var remove = function (array) {
+                var what, a = arguments, L = a.length, ax;
+                while (L > 1 && arr.length) {
+                    what = a[--L];
+                    while ((ax= arr.indexOf(what)) !== -1) {
+                        arr.splice(ax, 1);
+                    }
+                }
+                return arr;
+            }
+            if (eventListeners[e]) {
+                remove(eventListeners[e], f);
+            }
+        },
+
+        clearEventListener = function (e) {
+            if (eventListeners[e]) {
+                eventListeners[e].length = 0;
+            }
+        },
+
+        triggerEvent = function(e) {
+            if (eventListeners[e]) {
+                for (var i in eventListeners[e]) {
+                    eventListeners[e][i].apply(this, Array.from(arguments).slice(1));
+                }
+            }
         },
 
         checkPixelRatioChange = function () {
@@ -294,10 +323,6 @@ var JSPaint = function () {
                 onresize();
                 lastdpiPercentage = dpiPercentage;
             }
-        },
-
-        addClickEvent = function (e) {
-            clickEvents.push(e);
         },
 
         onresize = function (e) {
@@ -384,12 +409,12 @@ var JSPaint = function () {
         setColor: setColor,
         setColorFromRGB: setColorFromRGB,
         setSize: setSize,
-        addClickEventListener: addClickEventListener,
-        clearClickEventListener: clearClickEventListener,
+        addEventListener: addEventListener,
+        removeEventListener: removeEventListener,
+        clearEventListener: clearEventListener,
         clearCanvas: clearCanvas,
         updateUserDebugMsg: updateUserDebugMsg,
         doInitialSync: doInitialSync,
         autoRefresh: autoRefresh,
-        addClickEvent: addClickEvent,
     };
 };
