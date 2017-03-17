@@ -1,1 +1,1 @@
-python server.py
+python -m tornado.autoreload server.py
