@@ -6,6 +6,7 @@ import time
 import datetime
 import json
 import copy
+import sys
 
 from tornado.options import define, options, parse_command_line
 
@@ -60,7 +61,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.room = self.get_argument("room")
         self.id = self.get_argument("id")
         self.stream.set_nodelay(True)
-        print(str(getServerTimestamp()) + " CONNECT room {} id {}".format(self.room, self.id))
+        print(str(getServerTimestamp()) +
+              " CONNECT room {} id {}".format(self.room, self.id), file=sys.stderr)
         if self.room not in clients or self.room not in room_history:
             clients[self.room] = dict()
             room_history[self.room] = []
@@ -86,7 +88,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                     commands[command[0]](self, message)
 
     def on_close(self):
-        print("BYE")
+        print(str(getServerTimestamp()) +
+              " BYE room {} id {}".format(self.room, self.id), file=sys.stderr)
         if self.id in clients[self.room]:
             del clients[self.room][self.id]
 
@@ -95,12 +98,19 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         for room in clients:
             for client in clients[room]:
                 c = clients[room][client]
-                while len(c["buffer"]):
+                while len(c["buffer"]) and c["object"] is not None:
                     print(str(getServerTimestamp()) + " PUSH {}, {} messages remaining".format(
                         c["id"],
                         len(c["buffer"])
                         ))
-                    c["object"].write_message(c["buffer"].pop(0))
+                    try:
+                        msg = c["buffer"][0]
+                        c["object"].write_message(msg)
+                        c["buffer"].pop(0)
+                    except WebSocketClosedError:
+                        print(str(getServerTimestamp()) +
+                              " ERROR: unable to send to {}".format(c["id"]), file=sys.stderr)
+
         # schedule next push
         tornado.ioloop.IOLoop.instance().add_timeout(
             datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
@@ -127,6 +137,6 @@ if __name__ == '__main__':
     app.listen(options.port)
     tornado.ioloop.IOLoop.instance().add_timeout(
         datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
-    print("Server listening on port {}...".format(options.port))
+    print("Server listening on port {}...".format(options.port), file=sys.stderr)
     tornado.ioloop.IOLoop.instance().start()
-    
+
