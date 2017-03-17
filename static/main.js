@@ -38,6 +38,8 @@ var onReady = function () {
         }
     };
     var wsSetup = function () {
+        ws_status = "initializating...";
+        updateUserDebugMsg();
         ws = new WebSocket(ws_location + "?room=" + roomid + "&id=" + uuid);
         
 
@@ -52,7 +54,7 @@ var onReady = function () {
             }
             ws_status = "connected, sending log...";
             updateUserDebugMsg();
-            console.log("WebSocket connected: ", event);
+            // console.log("WebSocket connected: ", event);
             while (ws_waiting_list.length > 0) {
                 ws.send(ws_waiting_list.shift());
             }
@@ -67,7 +69,7 @@ var onReady = function () {
             ws_status = "disconnected, reconnect interval " + ws_reconnect_interval + "ms";
             ws_is_connected = false;
             updateUserDebugMsg();
-            console.log("WebSocket close: ", event, ws_reconnect_interval);
+            // console.log("WebSocket close: ", event, ws_reconnect_interval);
             ws_timer = setTimeout(wsSetup, ws_reconnect_interval);
         });
 
@@ -76,7 +78,7 @@ var onReady = function () {
             ws_status = "error";
             ws_is_connected = false;
             updateUserDebugMsg();
-            console.log("WebSocket error: ", event);
+            // console.log("WebSocket error: ", event);
             if (ws_reconnect_interval <= 32000) {
                 ws_reconnect_interval = ws_reconnect_interval + 500;
             }

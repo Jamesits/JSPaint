@@ -100,6 +100,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         tornado.ioloop.IOLoop.instance().add_timeout(
             datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
 
+
+class StaticFileHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        # Disable cache
+        self.set_header('Cache-Control',
+                        'no-store, no-cache, must-revalidate, max-age=0')
+
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
 }
@@ -107,6 +114,7 @@ settings = {
 app = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/ws', WebSocketHandler),
+    (r'/static/(.*)', StaticFileHandler),
 ], **settings)
 
 if __name__ == '__main__':
@@ -114,5 +122,6 @@ if __name__ == '__main__':
     app.listen(options.port)
     tornado.ioloop.IOLoop.instance().add_timeout(
         datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
-    tornado.ioloop.IOLoop.instance().start()
     print("Server listening on port {}...".format(options.port))
+    tornado.ioloop.IOLoop.instance().start()
+    
