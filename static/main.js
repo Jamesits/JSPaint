@@ -43,10 +43,14 @@ var onReady = function () {
         send(t);
     }
     var wsSetup = function () {
+        ws_is_connected = false;
         ws_status = "initializating...";
         updateUserDebugMsg();
+        // if WebSocket is still active, close it.
+        if (ws) {
+            ws.close();
+        }
         ws = new WebSocket(ws_location + "?room=" + roomid + "&id=" + uuid);
-        
 
         // connected
         ws.addEventListener('open', function (event) {
@@ -103,7 +107,7 @@ var onReady = function () {
             } catch (e){
                 // got control message
                 var msg = event.data.split(" ");
-                if (msg[0] === "CLEAR") {
+                if (msg[0].startsWith("CLEAR")) {
                     p.clearCanvas(msg[1]);
                 }
             }
