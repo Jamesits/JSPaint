@@ -60,7 +60,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.room = self.get_argument("room")
         self.id = self.get_argument("id")
         self.stream.set_nodelay(True)
-        print("CONNECT room {} id {}".format(self.room, self.id))
+        print(str(getServerTimestamp()) + " CONNECT room {} id {}".format(self.room, self.id))
         if self.room not in clients or self.room not in room_history:
             clients[self.room] = dict()
             room_history[self.room] = []
@@ -80,7 +80,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             updateHandler(self, m)
         except json.decoder.JSONDecodeError:
             command = message.split(" ")
-            print("{} COMMAND {}".format(self.id, message))
+            print(str(getServerTimestamp()) + " {} COMMAND {}".format(self.id, message))
             if len(command) >= 2:
                 if command[0] in commands:
                     commands[command[0]](self, message)
@@ -96,7 +96,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             for client in clients[room]:
                 c = clients[room][client]
                 while len(c["buffer"]):
-                    print("PUSH {}, {} messages remaining".format(
+                    print(str(getServerTimestamp()) + " PUSH {}, {} messages remaining".format(
                         c["id"],
                         len(c["buffer"])
                         ))
