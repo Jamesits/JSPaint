@@ -76,9 +76,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             print("UPDATE {}".format(m))
             updateHandler(self, m)
         except json.decoder.JSONDecodeError:
-            print("COMMAND {} from {}".format(message, self.id))
-            if message in commands:
-                commands[message](self, message)
+            command = message.split(" ")
+            print("{} COMMAND {}".format(self.id, message))
+            if len(command) >= 2:
+                if command[0] in commands:
+                    commands[command[0]](self, message)
 
     def on_close(self):
         print("BYE")

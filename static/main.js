@@ -37,6 +37,15 @@ var onReady = function () {
             ws_waiting_list.push(msg);
         }
     };
+    var sendControlMsg = function (msg, args) {
+        var t = msg + " " + Date.now();
+        if (args) t = t + " " + args;
+        if (ws_is_connected) {
+            ws.send(t);
+        } else {
+            ws_waiting_list.push(t);
+        }
+    }
     var wsSetup = function () {
         ws_status = "initializating...";
         updateUserDebugMsg();
@@ -47,20 +56,20 @@ var onReady = function () {
         ws.addEventListener('open', function (event) {
             ws_is_connected = true;
             ws_reconnect_interval = 0;
-            ws.send("INIT");
+            sendControlMsg("INIT");
             if (ws_is_first_connect) {
                 ws_status = "connected, pulling log...";
-                ws.send("PULL");
+                sendControlMsg("PULL");
             }
             ws_status = "connected, sending log...";
             updateUserDebugMsg();
             // console.log("WebSocket connected: ", event);
             while (ws_waiting_list.length > 0) {
-                ws.send(ws_waiting_list.shift());
+                send(ws_waiting_list.shift());
             }
             ws_status = "connected";
             updateUserDebugMsg();
-            ws.send("HELLO");
+            sendControlMsg("HELLO");
             ws_is_first_connect = false;
         });
 
@@ -105,7 +114,7 @@ var onReady = function () {
 
         // set up UI event listeners
         document.getElementById("clear").addEventListener("click", function () {
-            send("CLEAR");
+            sendControlMsg("CLEAR");
             p.clearCanvas();
         });
 
