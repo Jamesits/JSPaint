@@ -330,6 +330,10 @@ var JSPaint = function () {
             }
         },
 
+        addClickEvent = function (e) {
+            clickEvents.push(e);
+        },
+
         onresize = function (e) {
             dpiPercentage = getPixelRatio();
             drawingAreaWidth = canvasDiv.offsetWidth;
@@ -421,5 +425,6 @@ var JSPaint = function () {
         updateUserDebugMsg: updateUserDebugMsg,
         doInitialSync: doInitialSync,
         autoRefresh: autoRefresh,
+        addClickEvent: addClickEvent,
     };
 };
