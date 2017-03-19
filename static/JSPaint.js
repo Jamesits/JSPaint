@@ -443,7 +443,10 @@ var JSPaint = function () {
             },
 
             penUp = function (e) {
+                // add new stroke
+                addClick(e);
                 pen.down = false;
+                // trigger ending point
                 addClick(e);
             },
 
