@@ -32,13 +32,9 @@ var JSPaintSync = function (paint, ws_location, params) {
         socket: null,
         waiting_list: [],
         paint_event_defer: null,
+        debug_msg: "",
     };
 
-    var updateUserDebugMsg = function () {
-        var text = "WebSocket: " + ws.status;
-        // p.updateUserDebugMsg(text);
-        console.log(text);
-    };
     var send = function (msg) {
         if (ws.connected) {
             ws.socket.send(msg);
@@ -56,7 +52,6 @@ var JSPaintSync = function (paint, ws_location, params) {
         ws.paint_event_defer = deferHelper();
         ws.connected = false;
         ws.status = "initializating...";
-        updateUserDebugMsg();
         // if WebSocket is still active, close it.
         if (ws.socket) {
             ws.socket.close();
@@ -73,13 +68,11 @@ var JSPaintSync = function (paint, ws_location, params) {
                 sendControlMsg("PULL");
             }
             ws.status = "connected, sending log...";
-            updateUserDebugMsg();
             // console.log("WebSocket connected: ", event);
             while (ws.waiting_list.length > 0) {
                 send(ws.waiting_list.shift());
             }
             ws.status = "connected";
-            updateUserDebugMsg();
             sendControlMsg("HELLO");
             ws.is_first_connect = false;
         });
@@ -88,7 +81,6 @@ var JSPaintSync = function (paint, ws_location, params) {
         ws.socket.addEventListener('close', function (event) {
             ws.is_connected = false;
             ws.status = "disconnected, reconnect interval " + ws.reconnect_interval + "ms";
-            updateUserDebugMsg();
             ws.timer = setTimeout(wsSetup, ws.reconnect_interval);
         });
 
@@ -96,7 +88,6 @@ var JSPaintSync = function (paint, ws_location, params) {
         ws.socket.addEventListener('error', function (event) {
             ws.is_connected = false;
             ws.status = "error";
-            updateUserDebugMsg();
             // console.log("WebSocket error: ", event);
             if (ws.reconnect_interval <= 32000) {
                 ws.reconnect_interval = ws.reconnect_interval + 500;
