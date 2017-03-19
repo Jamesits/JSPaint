@@ -469,7 +469,9 @@ var JSPaint = function () {
         dom.bgCanvasContext = canvasElement.getContext("2d");
 
         // debug information display div
-        dom.debugDiv = document.getElementById("debug");
+        dom.debugDiv = document.createElement('div');
+        dom.debugDiv.setAttribute('id', 'debug');
+        dom.canvasDiv.appendChild(dom.debugDiv);
 
         triggerEvent('resize');
 
