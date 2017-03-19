@@ -21,16 +21,18 @@ var onReady = function () {
 
     // WebSocket URL
     var ws_location = (location.protocol.toLowerCase().startsWith("https") ? "wss://" : "ws://") + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
+    var room = getURLParameter('room') || "default";
     
     p.addEventListener('updateDebugMessage', function (e) {
         e.onepaper = {
             ws: ws_location,
             uuid: uuid,
+            room: room,
         };
     })
 
     var s = JSPaintSync(p, ws_location, {
-        room: getURLParameter('room') || 0,
+        room: room,
         id: uuid,
     });
 

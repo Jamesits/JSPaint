@@ -112,7 +112,6 @@ var JSPaintSync = function (paint, ws_location, params) {
         ws.paint_event_defer.addTask(p.addEventListener('updateDebugMessage', function (e) {
             e.websocket = {
                 status: ws.status,
-                is_first_connect: ws.is_first_connect,
                 connected: ws.connected,
                 reconnect_interval: ws.reconnect_interval,
                 waiting_list_length: ws.waiting_list.length
