@@ -46,12 +46,6 @@ canvas.jspaint {
     display: none;
 }
 
-#debug {
-    position: fixed;
-    float: left;
-    padding-left: 10px;
-}
-
 seperator {
     text-align: center;
     display: inline-block;
@@ -68,4 +62,28 @@ seperator {
 
 .hide {
     visibility: hidden;
+}
+
+#debug {
+    position: fixed;
+    float: left;
+    padding-left: 10px;
+    font-family: monospace;
+}
+
+#debug table,
+#debug th,
+#debug td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+#debug th {
+   border-left-width: 2px;
+}
+
+#debug td:nth-of-type(2n - 1) {
+    background: #DDD;
+    border-left-width: 2px;
 }

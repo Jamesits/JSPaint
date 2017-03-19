@@ -201,11 +201,15 @@ var JSPaint = function () {
                         size: pen.size,
                         color: pen.color,
                     },
+                    background_process: {},
                 };
+                for (var i in backgroundProcesses) {
+                    p.content.background_process[i] = backgroundProcesses[i].enabled + " " + backgroundProcesses[i].interval + "ms";
+                }
                 triggerEvent('updateDebugMessage', p.content);
 
                 // generate table from debug content
-                var html = "<table><tr>";
+                var html = "<table><caption>Stats for nerds</caption><tr>";
                 var dataArray = [];
                 var seq = 0;
                 var max = 0;
