@@ -189,7 +189,6 @@ var JSPaint = function () {
                         polling_rate: p.eps.toFixed(2),
                         redraw_enabled: backgroundProcesses.redraw.enabled,
                         redraw_fps: p.fps.toFixed(2),
-                        redraw_interval: backgroundProcesses.redraw.interval.toFixed(2) + "ms",
                         dpi_ratio: canvasProperties.dpiPercentage,
                         commited_strokes: events.commited.length,
                         commiting_strokes: events.commiting.length,
@@ -393,7 +392,6 @@ var JSPaint = function () {
             },
 
             addClick = function (e) {
-                calcEventRate();
                 try {
                     var mouse = getCurrentMousePointerPos(e);
                     var currentPoint = {
@@ -401,6 +399,7 @@ var JSPaint = function () {
                         y: mouse.Y,
                     };
                     if (pen.down && events.lastPoint != null) {
+                        calcEventRate();
                         var stroke = {
                             p0: {
                                 x: events.lastPoint.x,
