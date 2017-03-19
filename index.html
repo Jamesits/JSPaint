@@ -7,6 +7,7 @@
         <link href="{{ static_url("index.css") }}" rel="stylesheet" type="text/css" />
     </head>
     <body>
+        <div id="debug"></div>
         <div id="flexbox-wrapper">
             <div id="canvasDiv"></div>
             <div id="toolbar">
@@ -24,7 +25,6 @@
                 <button id="clear" onclick="p.clearCanvas()">Clear Canvas</button>
                 <button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>
                 <seperator>|</seperator>
-                <span id="debug"></span>
             </div>
         </div>
         <!--[if lte IE 8]><script type="text/javascript" src="{{ static_url("excanvas.js") }}"></script><![endif]-->

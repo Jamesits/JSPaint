@@ -1,7 +1,5 @@
+"use strict";
 var JSPaint = function () {
-
-    "use strict";
-
     // helper functions
     var helper = {
         // RGB to color string
@@ -177,14 +175,53 @@ var JSPaint = function () {
             enabled: true,
             interval: 500,
             func: function (p) {
-                var text = "EPS: " + p.eps.toFixed(2) + (backgroundProcesses.redraw.enabled ? " Optimal FPS: " + p.fps.toFixed(2) + " Refresh Interval: " + backgroundProcesses.redraw.interval.toFixed(2) + "ms" : " Refresh Disabled") + " Ratio: " + canvasProperties.dpiPercentage + " Strokes: " + (events.commited.length + events.commiting.length + events.queuing.length) + " " + p.userMsg;
-                dom.debugDiv.innerHTML = text;
+                p.content = {
+                    core: {
+                        polling_rate: p.eps.toFixed(2),
+                        redraw_enabled: backgroundProcesses.redraw.enabled,
+                        redraw_fps: p.fps.toFixed(2),
+                        redraw_interval: backgroundProcesses.redraw.interval.toFixed(2) + "ms",
+                        dpi_ratio: canvasProperties.dpiPercentage,
+                        commited_strokes: events.commited.length,
+                        commiting_strokes: events.commiting.length,
+                        queueing_strokes: events.queuing.length,
+                    },
+                };
+                triggerEvent('updateDebugMessage');
+
+                // generate table from debug content
+                var html = "<table><tr>";
+                var dataArray = [];
+                var seq = 0;
+                var max = 0;
+                for (var i in p.content) {
+                    html += '<th colspan="2">' + i + "</th>";
+                    dataArray[seq * 2] = Object.keys(p.content[i]);
+                    dataArray[seq * 2 + 1] = Object.values(p.content[i]);
+                    max = Math.max(Object.keys(p.content[i]).length, max);
+                    seq++;
+                }
+                html += "</tr>";
+                for (var i = 0; i < max; i++) {
+                    html += '<tr>';
+                    for (var j = 0; j < seq; j++) {
+                        if (dataArray[j * 2][i]) {
+                            html += '<td>' + dataArray[j * 2][i] + '</td><td>' + dataArray[j * 2 + 1][i] + '</td>';
+                        } else {
+                            html += '<td></td><td></td>';
+                        }
+                    }
+                    html += '</tr>';
+                }
+                html += '</table>';
+                dom.debugDiv.innerHTML = html;
             },
             properties: {
                 fps: 0,
                 eps: 0,
                 lastEvent: 0,
                 userMsg: "",
+                content: null,
             },
         }
     };

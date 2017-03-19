@@ -47,8 +47,9 @@ canvas.jspaint {
 }
 
 #debug {
-    float: right;
-    padding-right: 10px;
+    position: fixed;
+    float: left;
+    padding-left: 10px;
 }
 
 seperator {
