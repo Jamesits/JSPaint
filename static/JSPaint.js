@@ -120,7 +120,6 @@ var JSPaint = function () {
     var canvasProperties = {
         drawingAreaWidth: 640,
         drawingAreaHeight: 480,
-        lastdpiPercentage: 1,
         dpiPercentage: 1,
         zoom: 1,
     };
@@ -154,24 +153,32 @@ var JSPaint = function () {
             enabled: true,
             interval: 50,
             func: function (p) {
-                triggerEvent('redraw', p);
+                var t0 = performance.now();
+
+                // clear canvas
+                dom.bgCanvasContext.clearRect(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
+
+                helper.mergeSort(events.commited, helper.sort_by_server_timestamp);
+
+                var drawArray = function (arr) {
+                    for (var currentRedrawPtr = 0; currentRedrawPtr < arr.length; currentRedrawPtr += 1) {
+                        draw(dom.bgCanvasContext, arr[currentRedrawPtr], arr[currentRedrawPtr - 1]);
+                    }
+                };
+
+                drawArray(events.commited);
+                drawArray(events.commiting);
+                drawArray(events.queuing);
+
+                p.lastBackgroundFrame = dom.bgCanvasContext.getImageData(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
+                dom.canvasContext.putImageData(p.lastBackgroundFrame, 0, 0);
+
+                var t1 = performance.now();
+                backgroundProcesses.refreshDebugMsg.properties.fps = (backgroundProcesses.refreshDebugMsg.properties.fps + 1000 / (t1 - t0)) / 2;
             },
             properties: {
                 lastBackgroundFrame: null,
             },
-        },
-        checkDevicePixelRatio: {
-            enabled: true,
-            interval: 100,
-            func: function () {
-                dpiPercentage = canvasOperations.getPixelRatio(dom.canvasContext);
-                if (dpiPercentage !== lastdpiPercentage) {
-                    setSize(curSize);
-                    onresize();
-                    lastdpiPercentage = dpiPercentage;
-                }
-            },
-            properties: {},
         },
         refreshDebugMsg: {
             enabled: true,
@@ -231,25 +238,38 @@ var JSPaint = function () {
                 userMsg: "",
                 content: null,
             },
-        }
+        },
+        checkDevicePixelRatio: {
+            enabled: true,
+            interval: 100,
+            func: function (p) {
+                canvasProperties.dpiPercentage = canvasOperations.getPixelRatio(dom.canvasContext);
+                if (canvasProperties.dpiPercentage !== p.lastdpiPercentage) {
+                    // setSize(curSize);
+                    onresize();
+                    p.lastdpiPercentage = canvasProperties.dpiPercentage;
+                }
+            },
+            properties: {},
+        },
     };
 
     var initBackgroundProcesses = function () {
         for (var n in backgroundProcesses) {
             var p = backgroundProcesses[n];
             // create timed function for every background process
-            p.timeFunc = function () {
-                if (p.func && p.enabled) p.func(p.properties);
-                p.timer = window.setTimeout(p.timeFunc, p.interval);
-            };
+            p.timeFunc = (function (isForced) {
+                if (this.func && (isForced || this.enabled)) this.func(this.properties);
+                this.timer = window.setTimeout(this.timeFunc, this.interval);
+            }).bind(p);
             // launch them asyncly
-            window.setTimeout(p.timeFunc, 1);
+            p.timer = window.setTimeout(p.timeFunc, 1);
         }
     };
 
     var triggerBackgroundProcess = function (name) {
         window.clearTimeout(backgroundProcesses[name].timer);
-        backgroundProcesses[name].timeFunc();
+        backgroundProcesses[name].timeFunc(true);
     }
 
     var onresize = function (e) {
@@ -335,32 +355,6 @@ var JSPaint = function () {
 
         context.closePath();
         context.stroke();
-    };
-
-    // draw on the background canvas, then copy content to foreground
-    var backgroundRedraw = function (p) {
-        var t0 = performance.now();
-
-        // clear canvas
-        dom.bgCanvasContext.clearRect(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
-
-        helper.mergeSort(events.commited, helper.sort_by_server_timestamp);
-
-        var drawArray = function (arr) {
-            for (var currentRedrawPtr = 0; currentRedrawPtr < arr.length; currentRedrawPtr += 1) {
-                draw(dom.bgCanvasContext, arr[currentRedrawPtr], arr[currentRedrawPtr - 1]);
-            }
-        };
-
-        drawArray(events.commited);
-        drawArray(events.commiting);
-        drawArray(events.queuing);
-
-        p.lastBackgroundFrame = dom.bgCanvasContext.getImageData(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
-        dom.canvasContext.putImageData(p.lastBackgroundFrame, 0, 0);
-
-        var t1 = performance.now();
-        backgroundProcesses.refreshDebugMsg.properties.fps = (backgroundProcesses.refreshDebugMsg.properties.fps + 1000 / (t1 - t0)) / 2;
     };
 
     // when user inputs, draw instantly with a fake movement
