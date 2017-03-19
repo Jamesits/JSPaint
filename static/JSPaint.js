@@ -186,6 +186,12 @@ var JSPaint = function () {
                         commiting_strokes: events.commiting.length,
                         queueing_strokes: events.queuing.length,
                     },
+                    pen: {
+                        down: pen.down,
+                        tool: pen.tool,
+                        size: pen.size,
+                        color: pen.color,
+                    },
                 };
                 triggerEvent('updateDebugMessage', p.content);
 
@@ -256,17 +262,35 @@ var JSPaint = function () {
     };
 
     // global getter and setter
+    // all objects whose attributes may be public accessable should be put in publicAccessibleObjects
+    // then use publicProperties to define public name and its access route
+    // use get('name') and set('name', 'newValue') outside
+    var publicAccessibleObjects = {
+        pen,
+    };
+
     var publicProperties = {
-        tool: pen.tool,
-        size: pen.size,
-        color: pen.color,
-        debugMsg: backgroundProcesses.refreshDebugMsg.properties.userMsg,
+        tool: 'pen.tool',
+        size: 'pen.size',
+        color: 'pen.color',
     };
+
     var get = function (property) {
-        return publicProperties[property];
+        var path = publicProperties[property].split(".");
+        var obj = publicAccessibleObjects;
+        while (path.length) {
+            obj = obj[path.shift()];
+        }
+        return obj;
     };
+
     var set = function (property, newValue) {
-        publicProperties[property] = newValue;
+        var path = publicProperties[property].split(".");
+        var obj = publicAccessibleObjects;
+        while (path.length > 1) {
+            obj = obj[path.shift()];
+        }
+        obj[path[0]] = newValue;
     };
 
     // debugging

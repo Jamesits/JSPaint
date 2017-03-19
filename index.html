@@ -10,19 +10,19 @@
         <div id="flexbox-wrapper">
             <div id="canvasDiv"></div>
             <div id="toolbar">
-                <button id="draw" onclick="p.setTool('marker')">Draw</button>
-                <button id="erase" onclick="p.setTool('eraser')">Erase</button>
+                <button id="draw" onclick="p.set('tool', 'marker')">Draw</button>
+                <button id="erase" onclick="p.set('tool', 'eraser')">Erase</button>
                 <seperator>|</seperator>
-                <button id="black" onclick="p.setColorFromRGB(0, 0, 0)">Black</button>
-                <button id="red" onclick="p.setColorFromRGB(255, 0, 0)">Red</button>
-                <button id="green" onclick="p.setColorFromRGB(0, 255, 0)">Green</button>
-                <button id="blue" onclick="p.setColorFromRGB(0, 0, 255)">Blue</button>
+                <button id="black" onclick="p.set('color', '#000000')">Black</button>
+                <button id="red" onclick="p.set('color', '#FF0000')">Red</button>
+                <button id="green" onclick="p.set('color', '#00FF00')">Green</button>
+                <button id="blue" onclick="p.set('color', '#0000FF')">Blue</button>
                 <seperator>|</seperator>
                 <label for="strokeSize">Stroke size</label>
-                <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" onchange="p.setSize(this.value)" />
+                <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" onchange="p.set('size', this.value)" />
                 <seperator>|</seperator>
                 <button id="clear" onclick="p.clearCanvas()">Clear Canvas</button>
-                <button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>
+                <!--<button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>-->
                 <button id="displaydebug" onclick="document.getElementById('debug').setAttribute('class', 'show');">Show Debug Panel</button>
             </div>
         </div>
