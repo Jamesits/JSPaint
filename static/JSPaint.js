@@ -297,8 +297,8 @@ var JSPaint = function () {
     var calcEventRate = function () {
         window.setTimeout(function () {
             var current_time = performance.now();
-            debug.eps = (debug.eps + 1000 / (current_time - debug.lastEvent)) / 2;
-            debug.lastEvent = current_time;
+            backgroundProcesses.refreshDebugMsg.properties.eps = (backgroundProcesses.refreshDebugMsg.properties.eps + 1000 / (current_time - backgroundProcesses.refreshDebugMsg.properties.lastEvent)) / 2;
+            backgroundProcesses.refreshDebugMsg.properties.lastEvent = current_time;
         }, 1);
     };
 
