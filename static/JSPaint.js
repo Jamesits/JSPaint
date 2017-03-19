@@ -284,7 +284,7 @@ var JSPaint = function () {
         dom.canvasContext.canvas.height = dom.canvasDiv.offsetHeight * canvasProperties.dpiPercentage;
         dom.bgCanvasContext.canvas.width = dom.canvasDiv.offsetWidth * canvasProperties.dpiPercentage;
         dom.bgCanvasContext.canvas.height = dom.canvasDiv.offsetHeight * canvasProperties.dpiPercentage;
-        if (e) triggerEvent(redraw);
+        if (e) triggerEvent('redraw');
     };
 
     // global getter and setter
