@@ -136,6 +136,8 @@ var JSPaint = function () {
         commiting: [],
         // pre-rendered but not commited
         queuing: [],
+        // last unfinished event point
+        lastPoint: null,
     };
 
     // canvas draw status
@@ -314,30 +316,25 @@ var JSPaint = function () {
         },
     };
 
-    var draw = function (canvasContext, currentStroke, lastStroke) {
-        if (!(tools[currentStroke.tool])) return;
-        canvasContext.beginPath();
+    var draw = function (context, stroke) {
+        if (!(tools[stroke.tool])) return;
 
-        // If dragging then draw a line between the two points
-        if (currentStroke.draw && lastStroke && lastStroke.tool !== "clear") {
-            canvasContext.moveTo(lastStroke.x * dpiPercentage, lastStroke.y * dpiPercentage);
-        } else {
-            // The x position is moved over one pixel so a circle even if not dragging
-            canvasContext.moveTo((currentStroke.x - 1) * dpiPercentage, currentStroke.y * dpiPercentage);
-        }
-        canvasContext.lineTo(currentStroke.x * dpiPercentage, currentStroke.y * dpiPercentage);
+        context.beginPath();
 
-        canvasContext.strokeStyle = currentStroke.color;
-        canvasContext.globalCompositeOperation = "source-over";
-        canvasContext.lineCap = "round";
-        canvasContext.lineJoin = "round";
-        canvasContext.lineWidth = currentStroke.size / currentStroke.dpiPercentage * dpiPercentage;
-        if (tools[currentStroke.tool].setCanvasContextOption) {
-            helper.objCopy(canvasContext, tools[currentStroke.tool].setCanvasContextOption());
+        context.moveTo(stroke.p0.x * canvasProperties.dpiPercentage, stroke.p0.y * canvasProperties.dpiPercentage);
+        context.lineTo(stroke.p1.x * canvasProperties.dpiPercentage, stroke.p1.y * canvasProperties.dpiPercentage);
+
+        context.strokeStyle = stroke.color;
+        context.globalCompositeOperation = "source-over";
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.lineWidth = stroke.size * canvasProperties.dpiPercentage;
+        if (tools[stroke.tool].setCanvasContextOption) {
+            helper.objCopy(context, tools[stroke.tool].setCanvasContextOption());
         }
 
-        canvasContext.closePath();
-        canvasContext.stroke();
+        context.closePath();
+        context.stroke();
     };
 
     // draw on the background canvas, then copy content to foreground
@@ -366,6 +363,28 @@ var JSPaint = function () {
         backgroundProcesses.refreshDebugMsg.properties.fps = (backgroundProcesses.refreshDebugMsg.properties.fps + 1000 / (t1 - t0)) / 2;
     };
 
+    // when user inputs, draw instantly with a fake movement
+    var instantDrawPoint = function (p) {
+        // TODO: check mouse speed
+        var fakeStroke = {
+            p0: {
+                x: p.x - 1,
+                y: p.y,
+            },
+            p1: p,
+            dpi: canvasProperties.dpiPercentage,
+            zoom: canvasProperties.zoom,
+            color: pen.color,
+            tool: pen.tool,
+            size: pen.size,
+        };
+        draw(dom.canvasContext, fakeStroke);
+    };
+
+    var instantDrawStroke = function (s) {
+        draw(dom.canvasContext, s);
+    }
+
     // user event processing
     var initUserEvents = function () {
         var getCurrentMousePointerPos = function (e) {
@@ -375,46 +394,62 @@ var JSPaint = function () {
                 };
             },
 
-            addClick = function (x, y, e) {
-                triggerEvent('click', {
-                    x: x,
-                    y: y,
-                    e: e
-                });
-            },
-
-            canvasAppend = function () {
-                triggerEvent('redraw');
-            },
-
-            pressDrawing = function (e) {
+            addClick = function (e) {
                 calcEventRate();
-                var mouse = getCurrentMousePointerPos(e);
-                pen.down = true;
-                addClick(mouse.X, mouse.Y, false);
-                canvasAppend();
-            },
-
-            dragDrawing = function (e) {
-                calcEventRate();
-                var mouse = getCurrentMousePointerPos(e);
-                if (pen.down) {
-                    addClick(mouse.X, mouse.Y, true);
-                    canvasAppend();
+                try {
+                    var mouse = getCurrentMousePointerPos(e);
+                    var currentPoint = {
+                        x: mouse.X,
+                        y: mouse.Y,
+                    };
+                    if (pen.down && events.lastPoint != null) {
+                        var stroke = {
+                            p0: {
+                                x: events.lastPoint.x,
+                                y: events.lastPoint.y,
+                            },
+                            p1: {
+                                x: mouse.X,
+                                y: mouse.Y,
+                            },
+                            dpi: canvasProperties.dpiPercentage,
+                            zoom: canvasProperties.zoom,
+                            color: pen.color,
+                            tool: pen.tool,
+                            size: pen.size,
+                        };
+                        triggerEvent('newStroke', stroke);
+                        events.lastPoint = currentPoint;
+                    } else if (pen.down) {
+                        triggerEvent('newStartPoint', currentPoint);
+                        events.lastPoint = currentPoint;
+                    } else {
+                        triggerEvent('newEndPoint', currentPoint);
+                        events.lastPoint = null;
+                    }
+                } catch (ex) {
                 }
+            },
+
+            penDown = function (e) {
+                pen.down = true;
+                addClick(e);
+            },
+
+            penMove = function (e) {
+                addClick(e);
                 // Prevent the whole page from dragging if on mobile
                 e.preventDefault();
             },
 
-            releaseDrawing = function () {
-                calcEventRate();
+            penUp = function (e) {
                 pen.down = false;
-                canvasAppend();
+                addClick(e);
             },
 
-            cancelDrawing = function () {
-                calcEventRate();
+            penCancel = function (e) {
                 pen.down = false;
+                addClick(e);
             };
 
         gestureRecognizer = new Hammer(dom.canvasContext.canvas);
@@ -422,10 +457,10 @@ var JSPaint = function () {
             direction: Hammer.DIRECTION_ALL,
             threshold: 0,
         });
-        gestureRecognizer.on('panstart', pressDrawing);
-        gestureRecognizer.on('panmove', dragDrawing);
-        gestureRecognizer.on('panend', releaseDrawing);
-        gestureRecognizer.on('pancancel', cancelDrawing);
+        gestureRecognizer.on('panstart', penDown);
+        gestureRecognizer.on('panmove', penMove);
+        gestureRecognizer.on('panend', penUp);
+        gestureRecognizer.on('pancancel', penCancel);
 
         window.addEventListener('resize', function (e) {
             triggerEvent('resize', e);
@@ -440,6 +475,8 @@ var JSPaint = function () {
     var eventListeners = {
         resize: [onresize],
         redraw: [function () { triggerBackgroundProcess('redraw'); }],
+        newStartPoint: [instantDrawPoint],
+        newStroke: [instantDrawStroke],
     };
 
     // event listeners operation
