@@ -187,7 +187,7 @@ var JSPaint = function () {
                         queueing_strokes: events.queuing.length,
                     },
                 };
-                triggerEvent('updateDebugMessage');
+                triggerEvent('updateDebugMessage', p.content);
 
                 // generate table from debug content
                 var html = "<table><tr>";
