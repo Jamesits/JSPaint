@@ -1,4 +1,5 @@
 var JSPaintSync = function (paint, ws_location, params) {
+    var cseq = 0;
     // dict to URL params
     // https://stackoverflow.com/questions/7045065/how-do-i-turn-a-javascript-dictionary-into-an-encoded-url-string
     var param_serialize = function (obj) {
@@ -95,7 +96,9 @@ var JSPaintSync = function (paint, ws_location, params) {
         });
 
         // set up draw event listener
-        ws.paint_event_defer.addTask(p.addEventListener('click', function (e, f) {
+        ws.paint_event_defer.addTask(p.addEventListener('newStroke', function (e, f) {
+            e.cseq = ++cseq;
+            e.ctime = Date.now();
             var msg = JSON.stringify(e);
             send(msg);
         }));
