@@ -20,7 +20,14 @@ var onReady = function () {
     }
 
     // WebSocket URL
-    var ws_location = (location.protocol.toLowerCase().startsWith("https")?"wss://":"ws://") + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
+    var ws_location = (location.protocol.toLowerCase().startsWith("https") ? "wss://" : "ws://") + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
+    
+    p.addEventListener('updateDebugMessage', function (e) {
+        e.onepaper = {
+            ws: ws_location,
+            uuid: uuid,
+        };
+    })
 
     var s = JSPaintSync(p, ws_location, {
         room: getURLParameter('room') || 0,
