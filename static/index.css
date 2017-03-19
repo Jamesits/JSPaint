@@ -61,3 +61,11 @@ seperator {
 #toolbar {
     z-index: 1000;
 }
+
+.show {
+    visibility: visible;
+}
+
+.hide {
+    visibility: hidden;
+}

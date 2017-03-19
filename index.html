@@ -23,7 +23,7 @@
                 <seperator>|</seperator>
                 <button id="clear" onclick="p.clearCanvas()">Clear Canvas</button>
                 <button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>
-                <seperator>|</seperator>
+                <button id="displaydebug" onclick="document.getElementById('debug').setAttribute('class', 'show');">Show Debug Panel</button>
             </div>
         </div>
         <!--[if lte IE 8]><script type="text/javascript" src="{{ static_url("excanvas.js") }}"></script><![endif]-->

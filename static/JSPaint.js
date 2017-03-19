@@ -472,6 +472,7 @@ var JSPaint = function () {
         dom.debugDiv = document.createElement('div');
         dom.debugDiv.setAttribute('id', 'debug');
         dom.canvasDiv.appendChild(dom.debugDiv);
+        dom.debugDiv.addEventListener('click', function () { dom.debugDiv.setAttribute('class', 'hide'); });
 
         triggerEvent('resize');
 
