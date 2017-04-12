@@ -36,6 +36,10 @@ def clearHandler(client, message):
         c["buffer"] = list()
         c["object"].write_message("CLEAR " + str(getServerTimestamp()))
 
+
+def pingHandler(client, message):
+    client.write_message("PONG " + str(getServerTimestamp()))
+
 # we gonna store clients in dictionary..
 clients = dict()
 room_history = dict()
@@ -43,7 +47,8 @@ commands = {
     "INIT": nullHandler,
     "PULL": pullHandler,
     "HELLO": nullHandler,
-    "CLEAR": clearHandler
+    "CLEAR": clearHandler,
+    "PING": pingHandler,
 }
 push_interval = 0.01
 

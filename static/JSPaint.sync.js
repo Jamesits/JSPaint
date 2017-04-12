@@ -30,6 +30,15 @@ var JSPaintSync = function (paint, ws_location, params) {
         connected: false,
         reconnect_interval: 0,
         timer: null,
+        ping: {
+            interval: 1000,
+            timer: null,
+            lastPingTimeStamp: 0,
+            lastPongTimeStamp: 0,
+            lastUpload: 0,
+            lastDownload: 0,
+            lastRTT: 0,
+        },
         socket: null,
         waiting_list: [],
         paint_event_defer: null,
@@ -59,6 +68,13 @@ var JSPaintSync = function (paint, ws_location, params) {
         }
         ws.socket = new WebSocket(ws_location + "?" + param_serialize(params));
 
+        var wsPing = function () {
+            if (ws.connected) {
+                ws.ping.lastPingTimeStamp = Date.now();
+                sendControlMsg("PING");
+            }
+        }
+
         // connected
         ws.socket.addEventListener('open', function (event) {
             ws.connected = true;
@@ -76,6 +92,7 @@ var JSPaintSync = function (paint, ws_location, params) {
             ws.status = "connected";
             sendControlMsg("HELLO");
             ws.is_first_connect = false;
+            ws.ping.timer = setTimeout(wsPing, ws.ping.interval);
         });
 
         // server disconnect
@@ -108,9 +125,25 @@ var JSPaintSync = function (paint, ws_location, params) {
                 status: ws.status,
                 connected: ws.connected,
                 reconnect_interval: ws.reconnect_interval,
-                waiting_list_length: ws.waiting_list.length
+                waiting_list_length: ws.waiting_list.length,
+                last_upload_latency: ws.ping.lastUpload,
+                last_download_latency: ws.ping.lastDownload,
+                last_rtt: ws.ping.lastRTT,
             };
         }));
+
+        var serverMsgHandlers = {
+            "CLEAR": function (msg) { p.clearCanvas(msg[1]); },
+            "PONG": function (msg) {
+                console.log(msg);
+                ws.ping.lastPongTimeStamp = Date.now();
+                ws.ping.lastRTT = ws.ping.lastPongTimeStamp - ws.ping.lastPingTimeStamp;
+                var serverPongTimeStamp = parseInt(msg[1]);
+                ws.ping.lastUpload = serverPongTimeStamp - ws.ping.lastPingTimeStamp;
+                ws.ping.lastDownload = ws.ping.lastPongTimeStamp - serverPongTimeStamp;
+                ws.ping.timer = setTimeout(wsPing, ws.ping.interval);
+            }
+        };
 
         ws.socket.addEventListener('message', function (event) {
             try {
@@ -119,8 +152,10 @@ var JSPaintSync = function (paint, ws_location, params) {
             } catch (e){
                 // got control message
                 var msg = event.data.split(" ");
-                if (msg[0].startsWith("CLEAR")) {
-                    p.clearCanvas(msg[1]);
+                for (var key in serverMsgHandlers) {
+                    if (msg[0] == key) {
+                        serverMsgHandlers[key](msg);
+                    }
                 }
             }
         });
