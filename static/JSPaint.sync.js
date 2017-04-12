@@ -124,7 +124,7 @@ var JSPaintSync = function (paint, ws_location, params) {
             e.cseq = ++cseq;
             e.ctime = Date.now();
             var msg = JSON.stringify(e);
-            send(msg);
+            setTimeout(send.bind(this, msg), 0);
             return true;
         });
 

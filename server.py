@@ -33,7 +33,7 @@ def updateHandler(client, message):
         if c["id"] != client.id:
             c["buffer"].append(message)
         else:
-            c["buffer"].append("CONFIRM " + str(message["cseq"]) + " " + str(message["serverTime"]))
+            c["buffer"].append("CONFIRM " + str(message["cseq"]) + " " + str(message["stime"]))
 
 def clearHandler(client, message):
     room_history[client.room] = list()
