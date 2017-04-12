@@ -14,8 +14,14 @@ var JSPaintSync = function (paint, ws_location, params) {
             addTask = function (f) { deferredFunctions.push(f); },
             runTasks = function () {
                 for (var i = deferredFunctions.length; i > 0; --i) {
-                    deferredFunctions[i]();
+                    try {
+                        deferredFunctions[i]();
+                    }
+                    catch (err) {
+                        console.log("Unable to execute deferred function ", deferredFunctions[i], err.message);
+                    }
                 }
+                deferredFunctions.length = 0;
             };
         return {
             addTask: addTask,
@@ -82,10 +88,10 @@ var JSPaintSync = function (paint, ws_location, params) {
             ws.reconnect_interval = 0;
             sendControlMsg("INIT");
             if (ws.is_first_connect) {
-                ws.status = "connected, pulling log...";
+                ws.status = "pulling log...";
                 sendControlMsg("PULL");
             }
-            ws.status = "connected, sending log...";
+            ws.status = "sending log...";
             // console.log("WebSocket connected: ", event);
             while (ws.waiting_list.length > 0) {
                 send(ws.waiting_list.shift());
@@ -99,7 +105,7 @@ var JSPaintSync = function (paint, ws_location, params) {
         // server disconnect
         ws.socket.addEventListener('close', function (event) {
             ws.is_connected = false;
-            ws.status = "disconnected, reconnect interval " + ws.reconnect_interval + "ms";
+            ws.status = "disconnected";
             ws.timer = setTimeout(wsSetup, ws.reconnect_interval);
         });
 
@@ -114,31 +120,31 @@ var JSPaintSync = function (paint, ws_location, params) {
         });
 
         // set up draw event listener
-        ws.paint_event_defer.addTask(p.addEventListener('newStroke', function (e, f) {
-            e.cseq = ++cseq;
-            e.ctime = Date.now();
-            var msg = JSON.stringify(e);
-            send(msg);
-        }));
+        p.addEventListener('newStroke', function (e, f) {
+                e.cseq = ++cseq;
+                e.ctime = Date.now();
+                var msg = JSON.stringify(e);
+                send(msg);
+        });
 
-        ws.paint_event_defer.addTask(p.addEventListener('updateDebugMessage', function (e) {
-            e.websocket = {
-                status: ws.status,
-                connected: ws.connected,
-                reconnect_interval: ws.reconnect_interval,
-                waiting_list_length: ws.waiting_list.length,
-                last_upload_latency: ws.ping.lastUpload,
-                last_download_latency: ws.ping.lastDownload,
-                last_rtt: ws.ping.lastRTT,
-            };
-            // because e.onepaper is created before this event listener
-            // we can edit it now
-            if (ws.connected) {
-                e.onepaper.online_clients = ws.online_number;
-            } else {
-                e.onepaper.online_clients = 0;
-            }
-        }));
+        p.addEventListener('updateDebugMessage', function (e) {
+                e.websocket = {
+                    status: ws.status,
+                    connected: ws.connected,
+                    reconnect_interval: ws.reconnect_interval,
+                    waiting_list_length: ws.waiting_list.length,
+                    last_upload_latency: ws.ping.lastUpload,
+                    last_download_latency: ws.ping.lastDownload,
+                    last_rtt: ws.ping.lastRTT,
+                };
+                // because e.onepaper is created before this event listener
+                // we can edit it now
+                if (ws.connected) {
+                    e.onepaper.online_clients = ws.online_number;
+                } else {
+                    e.onepaper.online_clients = 0;
+                }
+        });
 
         var serverMsgHandlers = {
             "CLEAR": function (msg) { p.clearCanvas(msg[1]); },
