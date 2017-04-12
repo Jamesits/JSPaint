@@ -121,29 +121,30 @@ var JSPaintSync = function (paint, ws_location, params) {
 
         // set up draw event listener
         p.addEventListener('newStroke', function (e, f) {
-                e.cseq = ++cseq;
-                e.ctime = Date.now();
-                var msg = JSON.stringify(e);
-                send(msg);
+            e.cseq = ++cseq;
+            e.ctime = Date.now();
+            var msg = JSON.stringify(e);
+            send(msg);
+            return true;
         });
 
         p.addEventListener('updateDebugMessage', function (e) {
-                e.websocket = {
-                    status: ws.status,
-                    connected: ws.connected,
-                    reconnect_interval: ws.reconnect_interval,
-                    waiting_list_length: ws.waiting_list.length,
-                    last_upload_latency: ws.ping.lastUpload,
-                    last_download_latency: ws.ping.lastDownload,
-                    last_rtt: ws.ping.lastRTT,
-                };
-                // because e.onepaper is created before this event listener
-                // we can edit it now
-                if (ws.connected) {
-                    e.onepaper.online_clients = ws.online_number;
-                } else {
-                    e.onepaper.online_clients = 0;
-                }
+            e.websocket = {
+                status: ws.status,
+                connected: ws.connected,
+                reconnect_interval: ws.reconnect_interval,
+                waiting_list_length: ws.waiting_list.length,
+                last_upload_latency: ws.ping.lastUpload,
+                last_download_latency: ws.ping.lastDownload,
+                last_rtt: ws.ping.lastRTT,
+            };
+            // because e.onepaper is created before this event listener
+            // we can edit it now
+            if (ws.connected) {
+                e.onepaper.online_clients = ws.online_number;
+            } else {
+                e.onepaper.online_clients = 0;
+            }
         });
 
         var serverMsgHandlers = {
@@ -158,13 +159,16 @@ var JSPaintSync = function (paint, ws_location, params) {
             },
             "ONLINE": function (msg) {
                 ws.online_number = parseInt(msg[1]);
-            }
+            },
+            "CONFIRM": function (msg) {
+
+            },
         };
 
         ws.socket.addEventListener('message', function (event) {
             try {
                 var d = JSON.parse(event.data)
-                p.addClickEvent(d);
+                p.addStroke(d);
             } catch (e){
                 // got control message
                 var msg = event.data.split(" ");

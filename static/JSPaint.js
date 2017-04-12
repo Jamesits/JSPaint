@@ -64,8 +64,8 @@ var JSPaint = function () {
             var mid, left, right;
 
             mid = ~~(arr.length / 2);
-            left = mergeSort(arr.slice(0, mid), compareFn);
-            right = mergeSort(arr.slice(mid, arr.length), compareFn);
+            left = this.mergeSort(arr.slice(0, mid), compareFn);
+            right = this.mergeSort(arr.slice(mid, arr.length), compareFn);
 
             return merge(left, right, compareFn);
         },
@@ -376,10 +376,12 @@ var JSPaint = function () {
             size: pen.size,
         };
         draw(dom.canvasContext, fakeStroke);
+        return true;
     };
 
     var instantDrawStroke = function (s) {
         draw(dom.canvasContext, s);
+        return true;
     }
 
     // user event processing
@@ -415,7 +417,11 @@ var JSPaint = function () {
                             tool: pen.tool,
                             size: pen.size,
                         };
-                        triggerEvent('newStroke', stroke);
+                        if (triggerEvent('newStroke', stroke)) {
+                            events.commiting.push(stroke);
+                        } else {
+                            events.queuing.push(stroke);
+                        }
                         events.lastPoint = currentPoint;
                     } else if (pen.down) {
                         triggerEvent('newStartPoint', currentPoint);
@@ -498,11 +504,14 @@ var JSPaint = function () {
     };
 
     var triggerEvent = function (e) {
+        var ret = true;
         if (eventListeners[e]) {
             for (var i in eventListeners[e]) {
-                eventListeners[e][i].apply(this, Array.from(arguments).slice(1));
+                var cur_ret = eventListeners[e][i].apply(this, Array.from(arguments).slice(1));
+                ret = ret && cur_ret;
             }
         }
+        return ret;
     };
 
     // object initialize
@@ -548,5 +557,6 @@ var JSPaint = function () {
         addEventListener: addEventListener,
         removeEventListener: removeEventListener,
         triggerEvent: triggerEvent,
+        addStroke: function (event) { events.commited.push(event); }
     };
 };
