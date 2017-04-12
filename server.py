@@ -83,8 +83,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         try:
             m = json.loads(message)
-            m['serverTime'] = getServerTimestamp()
-            m['clientId'] = self.id
+            m['stime'] = getServerTimestamp()
+            m['cid'] = self.id
             m['room'] = self.room
             print("UPDATE {}".format(m))
             updateHandler(self, m)

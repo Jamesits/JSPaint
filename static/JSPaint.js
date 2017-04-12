@@ -8,19 +8,15 @@ var JSPaint = function () {
         },
 
         sort_by_server_timestamp: function (a, b) {
-            var a_time = a.serverTime || a.clientTime || (a.x + a.y);
-            var b_time = b.serverTime || b.clientTime || (b.x + b.y);
+            var a_time = a.stime || a.ctime || (a.x + a.y);
+            var b_time = b.stime || b.ctime || (b.x + b.y);
             var ret = a_time - b_time;
             if (ret == 0) {
-                a_time += a.clientTime;
-                b_time += b.clientTime;
+                a_time += a.ctime;
+                b_time += b.ctime;
                 ret = a_time - b_time;
             }
-            if (ret == 0) {
-                a_time = a.x + a.y;
-                b_time = b.x + b.y;
-                ret = a_time - b_time;
-            }
+            return ret;
         },
 
         // merge sort
@@ -199,6 +195,11 @@ var JSPaint = function () {
                         tool: pen.tool,
                         size: pen.size,
                         color: pen.color,
+                    },
+                    queue: {
+                        commited: events.commited.length,
+                        commiting: events.commiting.length,
+                        queuing: events.queuing.length,
                     },
                     background_process: {},
                 };
@@ -557,6 +558,20 @@ var JSPaint = function () {
         addEventListener: addEventListener,
         removeEventListener: removeEventListener,
         triggerEvent: triggerEvent,
-        addStroke: function (event) { events.commited.push(event); }
+        addStroke: function (event) { events.commited.push(event); },
+        confirmStroke: function (seq, serverTime) {
+            var moveElements = function (source, target, seq) {
+                for (var i = 0; i < source.length; i++) {
+                    var element = source[i];
+                    if (element.cseq == seq) {
+                        source.splice(i, 1);
+                        target.push(element);
+                        return element;
+                    }
+                }
+            };
+            var e = moveElements(events.commiting, events.commited, seq);
+            e.stime = serverTime;
+        },
     };
 };

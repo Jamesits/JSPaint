@@ -161,7 +161,7 @@ var JSPaintSync = function (paint, ws_location, params) {
                 ws.online_number = parseInt(msg[1]);
             },
             "CONFIRM": function (msg) {
-
+                p.confirmStroke(parseInt(msg[1]), parseInt(msg[2]));
             },
         };
 
