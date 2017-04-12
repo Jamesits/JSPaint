@@ -149,28 +149,31 @@ var JSPaint = function () {
             enabled: true,
             interval: 50,
             func: function (p) {
-                var t0 = performance.now();
+                // if user is drawing then do not enable auto redraw
+                if (!pen.down) {
+                    var t0 = performance.now();
 
-                // clear canvas
-                dom.bgCanvasContext.clearRect(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
+                    // clear canvas
+                    dom.bgCanvasContext.clearRect(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
 
-                helper.mergeSort(events.commited, helper.sort_by_server_timestamp);
+                    helper.mergeSort(events.commited, helper.sort_by_server_timestamp);
 
-                var drawArray = function (arr) {
-                    for (var currentRedrawPtr = 0; currentRedrawPtr < arr.length; currentRedrawPtr += 1) {
-                        draw(dom.bgCanvasContext, arr[currentRedrawPtr], arr[currentRedrawPtr - 1]);
-                    }
-                };
+                    var drawArray = function (arr) {
+                        for (var currentRedrawPtr = 0; currentRedrawPtr < arr.length; currentRedrawPtr += 1) {
+                            draw(dom.bgCanvasContext, arr[currentRedrawPtr], arr[currentRedrawPtr - 1]);
+                        }
+                    };
 
-                drawArray(events.commited);
-                drawArray(events.commiting);
-                drawArray(events.queuing);
+                    drawArray(events.commited);
+                    drawArray(events.commiting);
+                    drawArray(events.queuing);
 
-                p.lastBackgroundFrame = dom.bgCanvasContext.getImageData(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
-                dom.canvasContext.putImageData(p.lastBackgroundFrame, 0, 0);
+                    p.lastBackgroundFrame = dom.bgCanvasContext.getImageData(0, 0, dom.bgCanvasContext.canvas.width, dom.bgCanvasContext.canvas.height);
+                    dom.canvasContext.putImageData(p.lastBackgroundFrame, 0, 0);
 
-                var t1 = performance.now();
-                backgroundProcesses.refreshDebugMsg.properties.fps = (backgroundProcesses.refreshDebugMsg.properties.fps + 1000 / (t1 - t0)) / 2;
+                    var t1 = performance.now();
+                    backgroundProcesses.refreshDebugMsg.properties.fps = (backgroundProcesses.refreshDebugMsg.properties.fps + 1000 / (t1 - t0)) / 2;
+                }
             },
             properties: {
                 lastBackgroundFrame: null,
@@ -293,12 +296,14 @@ var JSPaint = function () {
     // use get('name') and set('name', 'newValue') outside
     var publicAccessibleObjects = {
         pen,
+        backgroundProcesses,
     };
 
     var publicProperties = {
         tool: 'pen.tool',
         size: 'pen.size',
         color: 'pen.color',
+        redraw: 'backgroundProcesses.redraw.enabled',
     };
 
     var get = function (property) {
