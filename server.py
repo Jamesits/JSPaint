@@ -15,6 +15,10 @@ define("port", default=80, help="run on the given port", type=int)
 def getServerTimestamp():
     return int(time.time() * 1000)
 
+def broadcastToRoom(room, message):
+    for c_index in clients[room]:
+        clients[room][c_index]["buffer"].append(message)
+
 def nullHandler(client, message):
     pass
 
@@ -68,6 +72,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             clients[self.room] = dict()
             room_history[self.room] = []
         clients[self.room][self.id] = {"id": self.id, "object": self, "buffer": []}
+        broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
 
     def on_message(self, message):
         """
@@ -93,6 +98,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
               " BYE room {} id {}".format(self.room, self.id), file=sys.stderr)
         if self.id in clients[self.room]:
             del clients[self.room][self.id]
+        broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
 
     @classmethod
     def server_push(cls):

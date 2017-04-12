@@ -43,6 +43,7 @@ var JSPaintSync = function (paint, ws_location, params) {
         waiting_list: [],
         paint_event_defer: null,
         debug_msg: "",
+        online_number: 0,
     };
 
     var send = function (msg) {
@@ -130,18 +131,27 @@ var JSPaintSync = function (paint, ws_location, params) {
                 last_download_latency: ws.ping.lastDownload,
                 last_rtt: ws.ping.lastRTT,
             };
+            // because e.onepaper is created before this event listener
+            // we can edit it now
+            if (ws.connected) {
+                e.onepaper.online_clients = ws.online_number;
+            } else {
+                e.onepaper.online_clients = 0;
+            }
         }));
 
         var serverMsgHandlers = {
             "CLEAR": function (msg) { p.clearCanvas(msg[1]); },
             "PONG": function (msg) {
-                console.log(msg);
                 ws.ping.lastPongTimeStamp = Date.now();
                 ws.ping.lastRTT = ws.ping.lastPongTimeStamp - ws.ping.lastPingTimeStamp;
                 var serverPongTimeStamp = parseInt(msg[1]);
                 ws.ping.lastUpload = serverPongTimeStamp - ws.ping.lastPingTimeStamp;
                 ws.ping.lastDownload = ws.ping.lastPongTimeStamp - serverPongTimeStamp;
                 ws.ping.timer = setTimeout(wsPing, ws.ping.interval);
+            },
+            "ONLINE": function (msg) {
+                ws.online_number = parseInt(msg[1]);
             }
         };
 
