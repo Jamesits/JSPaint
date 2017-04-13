@@ -52,6 +52,36 @@ seperator {
     min-width: 5px;
 }
 
+.round-button {
+    border-radius: 50px;
+    height: 32px;
+    width: 32px;
+}
+
+.round-button-selected {
+    border: 2px solid #808080;
+}
+
+.red {
+    background-color: #FF0000;
+}
+
+.green {
+    background-color: #00FF00;
+}
+
+.blue {
+    background-color: #0000FF;
+}
+
+.black {
+    background-color: #000000;
+}
+
+.white {
+    background-color: #FFFFFF;
+}
+
 #toolbar {
     z-index: 1000;
 }

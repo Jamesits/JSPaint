@@ -10,20 +10,18 @@
         <div id="flexbox-wrapper">
             <div id="canvasDiv"></div>
             <div id="toolbar">
-                <button id="draw" onclick="p.set('tool', 'marker')">Draw</button>
-                <button id="erase" onclick="p.set('tool', 'eraser')">Erase</button>
-                <seperator>|</seperator>
-                <button id="black" onclick="p.set('color', '#000000')">Black</button>
-                <button id="red" onclick="p.set('color', '#FF0000')">Red</button>
-                <button id="green" onclick="p.set('color', '#00FF00')">Green</button>
-                <button id="blue" onclick="p.set('color', '#0000FF')">Blue</button>
+                <button id="black" class="round-button black round-button-selected"></button>
+                <button id="red" class="round-button red"></button>
+                <button id="green" class="round-button green"></button>
+                <button id="blue" class="round-button blue"></button>
+                <button id="erase" class="round-button white"></button>
                 <seperator>|</seperator>
                 <label for="strokeSize">Stroke size</label>
-                <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" onchange="p.set('size', this.value)" />
+                <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" />
                 <seperator>|</seperator>
-                <button id="clear" onclick="p.clearCanvas()">Clear Canvas</button>
+                <button id="clear">Clear Canvas</button>
                 <!--<button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>-->
-                <button id="displaydebug" onclick="document.getElementById('debug').setAttribute('class', 'show');">Show Debug Panel</button>
+                <button id="displaydebug">Show Debug Panel</button>
             </div>
         </div>
         <!--[if lte IE 8]><script type="text/javascript" src="{{ static_url("excanvas.js") }}"></script><![endif]-->

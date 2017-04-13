@@ -1,3 +1,36 @@
+var hasClass = function (el, className) {
+    if (el) {
+        if (el.classList)
+            return el.classList.contains(className);
+        else
+            return !!el.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'));
+    } else return false;
+};
+
+var addClass = function (el, className) {
+    if (el.classList)
+        el.classList.add(className);
+    else if (!hasClass(el, className)) el.className += " " + className;
+};
+
+var removeClass = function (el, className) {
+    if (el.classList)
+        el.classList.remove(className);
+    else if (hasClass(el, className)) {
+        var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+        el.className = el.className.replace(reg, ' ');
+    }
+};
+
+var resetEnabledButton = function () {
+    var elems = document.getElementsByClassName('round-button');
+    for (var i in elems) {
+        if (elems.hasOwnProperty(i)) {
+            removeClass(elems[i], 'round-button-selected');
+        }
+    }
+};
+
 var p;
 var onReady = function () {
 
@@ -43,6 +76,46 @@ var onReady = function () {
         e.preventDefault();
         e.stopPropagation();
         return false;
+    });
+
+    // bind toolbar events
+    document.getElementById('black').addEventListener('click', function () { 
+        p.set('tool', 'marker');
+        p.set('color', '#000000');
+        resetEnabledButton();
+        addClass(document.getElementById('black'), 'round-button-selected');
+    });
+    document.getElementById('red').addEventListener('click', function () {
+        p.set('tool', 'marker');
+        p.set('color', '#FF0000');
+        resetEnabledButton();
+        addClass(document.getElementById('red'), 'round-button-selected');
+    });
+    document.getElementById('blue').addEventListener('click', function () {
+        p.set('tool', 'marker');
+        p.set('color', '#00FF00');
+        resetEnabledButton();
+        addClass(document.getElementById('blue'), 'round-button-selected');
+    });
+    document.getElementById('green').addEventListener('click', function () {
+        p.set('tool', 'marker');
+        p.set('color', '#0000FF');
+        resetEnabledButton();
+        addClass(document.getElementById('green'), 'round-button-selected');
+    });
+    document.getElementById('erase').addEventListener('click', function () {
+        p.set('tool', 'eraser');
+        resetEnabledButton();
+        addClass(document.getElementById('erase'), 'round-button-selected');
+    });
+    document.getElementById('strokeSize').addEventListener('change', function () {
+        p.set('size', this.value);
+    });
+    document.getElementById('clear').addEventListener('change', function () {
+        p.clearCanvas();
+    });
+    document.getElementById('displaydebug').addEventListener('change', function () {
+        document.getElementById('debug').setAttribute('class', 'show');
     });
 };
 
