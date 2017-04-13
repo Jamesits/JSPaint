@@ -48,6 +48,23 @@ def deleteRoom(room):
 def nullHandler(client, message):
     pass
 
+def initHandler(client, message):
+    if client.room not in clients or client.room not in room_history:
+            logging.info("Creating room {}...".format(client.room))
+            clients[client.room] = dict()
+            room_history[client.room] = []
+    clients[client.room][client.id] = {
+        "id": client.id, "object": client, "buffer": []}
+    broadcastToRoom(client.room, "ONLINE " + str(len(clients[client.room])))
+
+def reconnectHandler(client, message):
+    if client.room not in clients or client.room not in room_history or len(room_history[client.room] == 0):
+        # server restarted; client reconnecting
+        logging.info("Room {} recreated, refreshing client...".format(client.room))
+        # not sure how to implement this
+        # client["buffer"].append("REFRESH")
+    initHandler(client, message)
+
 def pullHandler(client, message):
     clients[client.room][client.id]["buffer"] = room_history[client.room] + \
         clients[client.room][client.id]["buffer"]
@@ -76,7 +93,8 @@ def pingHandler(client, message):
 clients = dict()
 room_history = dict()
 commands = {
-    "INIT": nullHandler,
+    "RECONNECT": reconnectHandler,
+    "INIT": initHandler,
     "PULL": pullHandler,
     "HELLO": nullHandler,
     "CLEAR": clearHandler,
@@ -94,14 +112,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.room = self.get_argument("room")
         self.id = self.get_argument("id")
         self.stream.set_nodelay(True)
-        logging.info(str(getServerTimestamp()) +
-              " CONNECT room {} id {}".format(self.room, self.id))
-        if self.room not in clients or self.room not in room_history:
-            logging.info("Creating room {}...".format(self.room))
-            clients[self.room] = dict()
-            room_history[self.room] = []
-        clients[self.room][self.id] = {"id": self.id, "object": self, "buffer": []}
-        broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
+        logging.info("CONNECT room {} id {}".format(self.room, self.id))
 
     def on_message(self, message):
         """
@@ -117,14 +128,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             updateHandler(self, m)
         except json.decoder.JSONDecodeError:
             command = message.split(" ")
-            logging.debug(str(getServerTimestamp()) + " {} COMMAND {}".format(self.id, message))
+            logging.debug("{} COMMAND {}".format(self.id, message))
             if len(command) >= 2:
                 if command[0] in commands:
                     commands[command[0]](self, message)
 
     def on_close(self):
-        logging.info(str(getServerTimestamp()) +
-              " BYE room {} id {}".format(self.room, self.id))
+        logging.info("BYE room {} id {}".format(self.room, self.id))
         if self.id in clients[self.room]:
             del clients[self.room][self.id]
         broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
@@ -139,7 +149,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             for client in clients[room]:
                 c = clients[room][client]
                 while len(c["buffer"]) and c["object"] is not None:
-                    logging.debug(str(getServerTimestamp()) + " PUSH {}, {} messages remaining".format(
+                    logging.debug("PUSH {}, {} messages remaining".format(
                         c["id"],
                         len(c["buffer"])
                         ))
@@ -148,8 +158,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                         c["object"].write_message(msg)
                         c["buffer"].pop(0)
                     except WebSocketClosedError:
-                        logging.error(str(getServerTimestamp()) +
-                              " ERROR: unable to send to {}".format(c["id"]))
+                        logging.error("ERROR: unable to send to {}".format(c["id"]))
 
         # schedule next push
         tornado.ioloop.IOLoop.instance().add_timeout(

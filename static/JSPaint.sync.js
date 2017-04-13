@@ -86,10 +86,12 @@ var JSPaintSync = function (paint, ws_location, params) {
         ws.socket.addEventListener('open', function (event) {
             ws.connected = true;
             ws.reconnect_interval = 0;
-            sendControlMsg("INIT");
             if (ws.is_first_connect) {
+                sendControlMsg("INIT");
                 ws.status = "pulling log...";
                 sendControlMsg("PULL");
+            } else {
+                sendControlMsg("RECONNECT");
             }
             ws.status = "sending log...";
             // console.log("WebSocket connected: ", event);
