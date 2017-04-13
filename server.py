@@ -19,7 +19,10 @@ clients = dict()
 room_history = dict()
 is_closing = False
 delete_scheduled_rooms = []
+# second
 push_interval = 0.01
+# ms
+delete_room_interval = 5*1000
 
 def signal_handler(signum, frame):
     global is_closing
@@ -45,17 +48,23 @@ def saveRoom(room):
         json.dump(room_history[room], outfile)
 
 def deleteRoom():
+    global delete_scheduled_rooms
     for i in delete_scheduled_rooms:
-        if getServerTimestamp() - i[0] > 5*60*1000:
-            saveRoom(self.room)
-            logging.info("Deleting room {}...".format(room))
+        if getServerTimestamp() - i[0] > delete_room_interval:
+            saveRoom(i[1])
+            logging.info("Deleting room {}...".format(i[1]))
             del clients[i[1]]
             del room_history[i[1]]
+            delete_scheduled_rooms.remove(i)
+
+    tornado.ioloop.IOLoop.instance().add_timeout(
+        datetime.timedelta(seconds=5), deleteRoom)
 
 def scheduleDeleteRoom(room):
     delete_scheduled_rooms.append((getServerTimestamp(), room))
 
 def unscheduleDeleteRoom(room):
+    global delete_scheduled_rooms
     delete_scheduled_rooms = list(filter(lambda x: x[1]!= room, delete_scheduled_rooms))
 
 def nullHandler(client, message):
@@ -197,7 +206,8 @@ if __name__ == '__main__':
     parse_command_line()
     app.listen(options.port)
     tornado.ioloop.PeriodicCallback(try_exit, 100).start()
-    tornado.ioloop.PeriodicCallback(deleteRoom, 5000).start()
+    tornado.ioloop.IOLoop.instance().add_timeout(
+        datetime.timedelta(seconds=5), deleteRoom)
     tornado.ioloop.IOLoop.instance().add_timeout(
         datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
     logging.info("Server listening on port {}...".format(options.port))
