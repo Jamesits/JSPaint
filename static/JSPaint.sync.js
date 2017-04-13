@@ -73,6 +73,7 @@ var JSPaintSync = function (paint, ws_location, params) {
         if (ws.socket) {
             ws.socket.close();
         }
+        ws.socket = null();
         ws.socket = new WebSocket(ws_location + "?" + param_serialize(params));
 
         var wsPing = function () {
