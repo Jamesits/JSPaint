@@ -576,7 +576,7 @@ var JSPaint = function () {
                 }
             };
             var e = moveElements(events.commiting, events.commited, seq);
-            e.stime = serverTime;
+            if(e) e.stime = serverTime;
         },
     };
 };
