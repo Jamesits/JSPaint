@@ -58,7 +58,7 @@ def initHandler(client, message):
     broadcastToRoom(client.room, "ONLINE " + str(len(clients[client.room])))
 
 def reconnectHandler(client, message):
-    if client.room not in clients or client.room not in room_history or len(room_history[client.room] == 0):
+    if client.room not in clients or client.room not in room_history or len(room_history[client.room]) == 0:
         # server restarted; client reconnecting
         logging.info("Room {} recreated, refreshing client...".format(client.room))
         # not sure how to implement this
