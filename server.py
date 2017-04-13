@@ -14,8 +14,12 @@ import signal
 
 from tornado.options import define, options, parse_command_line
 
+# we gonna store clients in dictionary..
+clients = dict()
+room_history = dict()
 is_closing = False
-
+delete_scheduled_rooms = []
+push_interval = 0.01
 
 def signal_handler(signum, frame):
     global is_closing
@@ -40,19 +44,30 @@ def saveRoom(room):
     with open(filename, 'w') as outfile:
         json.dump(room_history[room], outfile)
 
-def deleteRoom(room):
-    logging.info("Deleting room {}...".format(room))
-    del clients[room]
-    del room_history[room]
+def deleteRoom():
+    for i in delete_scheduled_rooms:
+        if getServerTimestamp() - i[0] > 5*60*1000:
+            saveRoom(self.room)
+            logging.info("Deleting room {}...".format(room))
+            del clients[i[1]]
+            del room_history[i[1]]
+
+def scheduleDeleteRoom(room):
+    delete_scheduled_rooms.append((getServerTimestamp(), room))
+
+def unscheduleDeleteRoom(room):
+    delete_scheduled_rooms = list(filter(lambda x: x[1]!= room, delete_scheduled_rooms))
 
 def nullHandler(client, message):
     pass
 
 def initHandler(client, message):
     if client.room not in clients or client.room not in room_history:
-            logging.info("Creating room {}...".format(client.room))
-            clients[client.room] = dict()
-            room_history[client.room] = []
+        logging.info("Creating room {}...".format(client.room))
+        clients[client.room] = dict()
+        room_history[client.room] = []
+    else:
+        unscheduleDeleteRoom(client.room)
     clients[client.room][client.id] = {
         "id": client.id, "object": client, "buffer": []}
     broadcastToRoom(client.room, "ONLINE " + str(len(clients[client.room])))
@@ -89,9 +104,6 @@ def clearHandler(client, message):
 def pingHandler(client, message):
     client.write_message("PONG " + str(getServerTimestamp()))
 
-# we gonna store clients in dictionary..
-clients = dict()
-room_history = dict()
 commands = {
     "RECONNECT": reconnectHandler,
     "INIT": initHandler,
@@ -100,7 +112,6 @@ commands = {
     "CLEAR": clearHandler,
     "PING": pingHandler,
 }
-push_interval = 0.01
 
 class IndexHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -140,8 +151,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
         if len(clients[self.room]) == 0:
             # nobody left
-            saveRoom(self.room)
-            deleteRoom(self.room)
+            scheduleDeleteRoom(self.room)
 
     @classmethod
     def server_push(cls):
@@ -187,6 +197,7 @@ if __name__ == '__main__':
     parse_command_line()
     app.listen(options.port)
     tornado.ioloop.PeriodicCallback(try_exit, 100).start()
+    tornado.ioloop.PeriodicCallback(deleteRoom, 5000).start()
     tornado.ioloop.IOLoop.instance().add_timeout(
         datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
     logging.info("Server listening on port {}...".format(options.port))
