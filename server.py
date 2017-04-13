@@ -159,7 +159,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         logging.info("BYE room {} id {}".format(self.room, self.id))
-        if self.id in clients[self.room]:
+        if self.room in clients and self.id in clients[self.room]:
             del clients[self.room][self.id]
         broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
         if len(clients[self.room]) == 0:
