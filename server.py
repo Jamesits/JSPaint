@@ -113,6 +113,9 @@ def clearHandler(client, message):
 def pingHandler(client, message):
     client.write_message("PONG " + str(getServerTimestamp()))
 
+def saveHandler(client, message):
+    saveRoom(client.room)
+
 commands = {
     "RECONNECT": reconnectHandler,
     "INIT": initHandler,
@@ -120,6 +123,7 @@ commands = {
     "HELLO": nullHandler,
     "CLEAR": clearHandler,
     "PING": pingHandler,
+    "SAVE": saveHandler,
 }
 
 class IndexHandler(tornado.web.RequestHandler):
