@@ -22,7 +22,7 @@ delete_scheduled_rooms = []
 # second
 push_interval = 0.01
 # ms
-delete_room_interval = 5*1000
+delete_room_interval = 5 * 60 * 1000
 
 def signal_handler(signum, frame):
     global is_closing
