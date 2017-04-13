@@ -186,10 +186,10 @@ var JSPaintSync = function (paint, ws_location, params) {
         });
 
         // set up UI event listeners
-        document.getElementById("clear").addEventListener("click", function () {
-            sendControlMsg("CLEAR");
-            p.clearCanvas();
-        });
+        // document.getElementById("clear").addEventListener("click", function () {
+        //     sendControlMsg("CLEAR");
+        //     p.clearCanvas();
+        // });
 
         return ws;
     };
