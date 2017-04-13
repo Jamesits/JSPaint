@@ -111,10 +111,10 @@ var onReady = function () {
     document.getElementById('strokeSize').addEventListener('change', function () {
         p.set('size', this.value);
     });
-    document.getElementById('clear').addEventListener('change', function () {
+    document.getElementById('clear').addEventListener('click', function () {
         p.clearCanvas();
     });
-    document.getElementById('displaydebug').addEventListener('change', function () {
+    document.getElementById('displaydebug').addEventListener('click', function () {
         document.getElementById('debug').setAttribute('class', 'show');
     });
 };

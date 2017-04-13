@@ -99,6 +99,7 @@ seperator {
     float: left;
     padding-left: 10px;
     font-family: monospace;
+    background: white;
 }
 
 #debug table,

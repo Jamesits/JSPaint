@@ -212,7 +212,7 @@ var JSPaint = function () {
                 triggerEvent('updateDebugMessage', p.content);
 
                 // generate table from debug content
-                var html = "<table><caption>Stats for nerds</caption><tr>";
+                var html = "<table><caption>Stats for nerds (Click to Dismiss)</caption><tr>";
                 var dataArray = [];
                 var seq = 0;
                 var max = 0;
