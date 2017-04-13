@@ -7,8 +7,21 @@ import datetime
 import json
 import copy
 import sys
+import re
+import logging
+import string
+import signal
 
 from tornado.options import define, options, parse_command_line
+
+is_closing = False
+
+
+def signal_handler(signum, frame):
+    global is_closing
+    logging.info('exiting...')
+    is_closing = True
+
 
 define("port", default=80, help="run on the given port", type=int)
 
@@ -18,6 +31,19 @@ def getServerTimestamp():
 def broadcastToRoom(room, message):
     for c_index in clients[room]:
         clients[room][c_index]["buffer"].append(message)
+
+def saveRoom(room):
+    filename = "history_{}_{}.json".format(room, getServerTimestamp())
+    valid_chars = frozenset("-_.() %s%s" % (string.ascii_letters, string.digits))
+    filename = ''.join(c for c in filename if c in valid_chars)
+    logging.info("Saving room {} to file {}...".format(room, filename))
+    with open(filename, 'w') as outfile:
+        json.dump(room_history[room], outfile)
+
+def deleteRoom(room):
+    logging.info("Deleting room {}...".format(room))
+    del clients[room]
+    del room_history[room]
 
 def nullHandler(client, message):
     pass
@@ -68,9 +94,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.room = self.get_argument("room")
         self.id = self.get_argument("id")
         self.stream.set_nodelay(True)
-        print(str(getServerTimestamp()) +
-              " CONNECT room {} id {}".format(self.room, self.id), file=sys.stderr)
+        logging.info(str(getServerTimestamp()) +
+              " CONNECT room {} id {}".format(self.room, self.id))
         if self.room not in clients or self.room not in room_history:
+            logging.info("Creating room {}...".format(self.room))
             clients[self.room] = dict()
             room_history[self.room] = []
         clients[self.room][self.id] = {"id": self.id, "object": self, "buffer": []}
@@ -86,21 +113,25 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             m['stime'] = getServerTimestamp()
             m['cid'] = self.id
             m['room'] = self.room
-            print("UPDATE {}".format(m))
+            logging.debug("UPDATE {}".format(m))
             updateHandler(self, m)
         except json.decoder.JSONDecodeError:
             command = message.split(" ")
-            print(str(getServerTimestamp()) + " {} COMMAND {}".format(self.id, message))
+            logging.debug(str(getServerTimestamp()) + " {} COMMAND {}".format(self.id, message))
             if len(command) >= 2:
                 if command[0] in commands:
                     commands[command[0]](self, message)
 
     def on_close(self):
-        print(str(getServerTimestamp()) +
-              " BYE room {} id {}".format(self.room, self.id), file=sys.stderr)
+        logging.info(str(getServerTimestamp()) +
+              " BYE room {} id {}".format(self.room, self.id))
         if self.id in clients[self.room]:
             del clients[self.room][self.id]
         broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
+        if len(clients[self.room]) == 0:
+            # nobody left
+            saveRoom(self.room)
+            deleteRoom(self.room)
 
     @classmethod
     def server_push(cls):
@@ -108,7 +139,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             for client in clients[room]:
                 c = clients[room][client]
                 while len(c["buffer"]) and c["object"] is not None:
-                    print(str(getServerTimestamp()) + " PUSH {}, {} messages remaining".format(
+                    logging.debug(str(getServerTimestamp()) + " PUSH {}, {} messages remaining".format(
                         c["id"],
                         len(c["buffer"])
                         ))
@@ -117,8 +148,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                         c["object"].write_message(msg)
                         c["buffer"].pop(0)
                     except WebSocketClosedError:
-                        print(str(getServerTimestamp()) +
-                              " ERROR: unable to send to {}".format(c["id"]), file=sys.stderr)
+                        logging.error(str(getServerTimestamp()) +
+                              " ERROR: unable to send to {}".format(c["id"]))
 
         # schedule next push
         tornado.ioloop.IOLoop.instance().add_timeout(
@@ -133,10 +164,21 @@ app = tornado.web.Application([
     (r'/ws', WebSocketHandler),
 ], **settings)
 
+
+def try_exit():
+    global is_closing
+    if is_closing:
+        for room in clients:
+            saveRoom(room)
+        tornado.ioloop.IOLoop.instance().stop()
+        logging.info('exit success')
+
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
     parse_command_line()
     app.listen(options.port)
+    tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().add_timeout(
         datetime.timedelta(seconds=push_interval), WebSocketHandler.server_push)
-    print("Server listening on port {}...".format(options.port), file=sys.stderr)
+    logging.info("Server listening on port {}...".format(options.port))
     tornado.ioloop.IOLoop.instance().start()

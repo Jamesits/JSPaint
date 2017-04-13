@@ -186,12 +186,12 @@ var JSPaint = function () {
                 p.content = {
                     core: {
                         polling_rate: p.eps.toFixed(2),
-                        redraw_enabled: backgroundProcesses.redraw.enabled,
+                        redraw: backgroundProcesses.redraw.enabled,
                         redraw_fps: p.fps.toFixed(2),
                         dpi_ratio: canvasProperties.dpiPercentage,
-                        commited_strokes: events.commited.length,
-                        commiting_strokes: events.commiting.length,
-                        queueing_strokes: events.queuing.length,
+                        commited: events.commited.length,
+                        commiting: events.commiting.length,
+                        queueing: events.queuing.length,
                     },
                     pen: {
                         down: pen.down,

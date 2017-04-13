@@ -117,6 +117,9 @@ var onReady = function () {
     document.getElementById('displaydebug').addEventListener('click', function () {
         document.getElementById('debug').setAttribute('class', 'show');
     });
+
+    // hide debug panel
+    document.getElementById('debug').setAttribute('class', 'hide');
 };
 
 (function ready(fn) {

@@ -3,6 +3,7 @@
     <head>
         <title>OnePaper</title>
         <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="msapplication-tap-highlight" content="no" />
         <link href="{{ static_url("index.css") }}" rel="stylesheet" type="text/css" />
     </head>
@@ -10,18 +11,20 @@
         <div id="flexbox-wrapper">
             <div id="canvasDiv"></div>
             <div id="toolbar">
+                OnePaper.io
+                <seperator>|</seperator>
                 <button id="black" class="round-button black round-button-selected"></button>
                 <button id="red" class="round-button red"></button>
                 <button id="green" class="round-button green"></button>
                 <button id="blue" class="round-button blue"></button>
                 <button id="erase" class="round-button white"></button>
                 <seperator>|</seperator>
-                <label for="strokeSize">Stroke size</label>
+                <label for="strokeSize">Size</label>
                 <input id="strokeSize" type="range" min="1" max="20" step="1" value="2" />
                 <seperator>|</seperator>
-                <button id="clear">Clear Canvas</button>
+                <!--<button id="clear">Clear</button>-->
                 <!--<button id="autorefresh" onclick="p.autoRefresh(!(p.autoRefresh()))">Toggle Autorefresh</button>-->
-                <button id="displaydebug">Show Debug Panel</button>
+                <button id="displaydebug">Stats</button>
             </div>
         </div>
         <!--[if lte IE 8]><script type="text/javascript" src="{{ static_url("excanvas.js") }}"></script><![endif]-->

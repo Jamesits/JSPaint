@@ -132,11 +132,11 @@ var JSPaintSync = function (paint, ws_location, params) {
             e.websocket = {
                 status: ws.status,
                 connected: ws.connected,
-                reconnect_interval: ws.reconnect_interval,
-                waiting_list_length: ws.waiting_list.length,
-                last_upload_latency: ws.ping.lastUpload,
-                last_download_latency: ws.ping.lastDownload,
-                last_rtt: ws.ping.lastRTT,
+                reconnect_timer: ws.reconnect_interval,
+                waiting_list: ws.waiting_list.length,
+                upload_delta: ws.ping.lastUpload,
+                download_delta: ws.ping.lastDownload,
+                rtt: ws.ping.lastRTT,
             };
             // because e.onepaper is created before this event listener
             // we can edit it now

@@ -49,17 +49,17 @@ canvas.jspaint {
 seperator {
     text-align: center;
     display: inline-block;
-    min-width: 5px;
+    min-width: 8px;
 }
 
 .round-button {
-    border-radius: 50px;
+    border-radius: 32px;
     height: 32px;
     width: 32px;
 }
 
 .round-button-selected {
-    border: 2px solid #808080;
+    border: 4px solid #808080;
 }
 
 .red {
@@ -84,6 +84,17 @@ seperator {
 
 #toolbar {
     z-index: 1000;
+    min-height: 32px;
+    margin-left: 4px;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: auto;
+    font-size: 32px;
+}
+
+#toolbar button, #toolbar input {
+    height: 32px;
+    font-size: 28px;
 }
 
 .show {
