@@ -163,6 +163,9 @@ var JSPaintSync = function (paint, ws_location, params) {
             "CONFIRM": function (msg) {
                 p.confirmStroke(parseInt(msg[1]), parseInt(msg[2]));
             },
+            "REFRESH": function (msg) {
+                location.reload();
+            },
         };
 
         ws.socket.addEventListener('message', function (event) {
