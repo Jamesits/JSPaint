@@ -199,11 +199,6 @@ var JSPaint = function () {
                         size: pen.size,
                         color: pen.color,
                     },
-                    queue: {
-                        commited: events.commited.length,
-                        commiting: events.commiting.length,
-                        queuing: events.queuing.length,
-                    },
                     background_process: {},
                 };
                 for (var i in backgroundProcesses) {

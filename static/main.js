@@ -55,7 +55,7 @@ var onReady = function () {
     // WebSocket URL
     var ws_location = (location.protocol.toLowerCase().startsWith("https") ? "wss://" : "ws://") + location.host + (location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname) + "/ws";
     var room = getURLParameter('room') || "default";
-    
+
     p.addEventListener('updateDebugMessage', function (e) {
         e.onepaper = {
             ws: ws_location,
@@ -79,7 +79,7 @@ var onReady = function () {
     });
 
     // bind toolbar events
-    document.getElementById('black').addEventListener('click', function () { 
+    document.getElementById('black').addEventListener('click', function () {
         p.set('tool', 'marker');
         p.set('color', '#000000');
         resetEnabledButton();
