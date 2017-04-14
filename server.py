@@ -42,7 +42,7 @@ def broadcastToRoom(room, message):
 def saveRoom(room):
     filename = "history_{}_{}.json".format(room, getServerTimestamp())
     valid_chars = frozenset("-_.() %s%s" % (string.ascii_letters, string.digits))
-    filename = ''.join(c for c in filename if c in valid_chars)
+    filename = "history/" + ''.join(c for c in filename if c in valid_chars)
     logging.info("Saving room {} to file {}...".format(room, filename))
     with open(filename, 'w') as outfile:
         json.dump(room_history[room], outfile)
