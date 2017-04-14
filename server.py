@@ -94,20 +94,31 @@ def pullHandler(client, message):
         clients[client.room][client.id]["buffer"]
 
 def updateHandler(client, message):
-    room_history[client.room].append(message)
-    for c_index in clients[client.room]:
-        c = clients[client.room][c_index]
-        if c["id"] != client.id:
-            c["buffer"].append(message)
-        else:
-            c["buffer"].append("CONFIRM " + str(message["cseq"]) + " " + str(message["stime"]))
+    # try find duplicate
+    dups = list(filter(lambda x: x["cid"] == message["cid"] and x["cseq"] == message["cseq"], room_history[client.room]))
+    if len(dups) == 0:
+        room_history[client.room].append(message)
+        for c_index in clients[client.room]:
+            c = clients[client.room][c_index]
+            if c["id"] != client.id:
+                c["buffer"].append(message)
+            else:
+                c["buffer"].append("CONFIRM " + str(message["cseq"]) + " " + str(message["stime"]))
+    else:
+        logging.warning("Client duplicate message {}".format(message))
+        for c_index in clients[client.room]:
+            c = clients[client.room][c_index]
+            if c["id"] == client.id:
+                c["buffer"].append("CONFIRM " + str(message["cseq"]) + " " + str(message["stime"]))
+
 
 def clearHandler(client, message):
     room_history[client.room] = list()
     for c_index in clients[client.room]:
         c = clients[client.room][c_index]
         c["buffer"] = list()
-        c["object"].write_message("CLEAR " + str(getServerTimestamp()))
+        # c["object"].write_message("CLEAR " + str(getServerTimestamp()))
+        c["object"].write_message("REFRESH " + str(getServerTimestamp()))
 
 
 def pingHandler(client, message):
@@ -139,10 +150,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         logging.info("CONNECT room {} id {}".format(self.room, self.id))
 
     def on_message(self, message):
-        """
-        when we receive some message we want some message handler..
-        for this example i will just print message to console
-        """
         try:
             m = json.loads(message)
             m['stime'] = getServerTimestamp()

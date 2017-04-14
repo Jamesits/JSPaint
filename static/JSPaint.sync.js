@@ -55,7 +55,8 @@ var JSPaintSync = function (paint, ws_location, params) {
     var send = function (msg) {
         if (ws.connected) {
             ws.socket.send(msg);
-        } else {
+        }
+        if (!ws.connected) {
             ws.waiting_list.push(msg);
         }
     };
