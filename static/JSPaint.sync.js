@@ -37,7 +37,7 @@ var JSPaintSync = function (paint, ws_location, params) {
         reconnect_interval: 0,
         timer: null,
         ping: {
-            interval: 1000,
+            interval: 30000,
             timer: null,
             lastPingTimeStamp: 0,
             lastPongTimeStamp: 0,
