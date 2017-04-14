@@ -96,7 +96,7 @@ var JSPaintSync = function (paint, ws_location, params) {
             }
             ws.status = "sending log...";
             // console.log("WebSocket connected: ", event);
-            while (ws.waiting_list.length > 0) {
+            while (ws.connected && ws.waiting_list.length > 0) {
                 send(ws.waiting_list.shift());
             }
             ws.status = "connected";
