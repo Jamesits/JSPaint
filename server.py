@@ -95,7 +95,7 @@ def pullHandler(client, message):
 
 def updateHandler(client, message):
     # try find duplicate
-    dups = list(filter(lambda x: x["cid"] == message["cid"] and x["cseq"] == message["cseq"], room_history[client.room]))
+    dups = list(filter(lambda x: x["cid"] == message["cid"] and x["ctime"] == message["ctime"], room_history[client.room]))
     if len(dups) == 0:
         room_history[client.room].append(message)
         for c_index in clients[client.room]:
@@ -166,12 +166,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         logging.info("BYE room {} id {}".format(self.room, self.id))
-        if self.room in clients and self.id in clients[self.room]:
-            del clients[self.room][self.id]
-        broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
-        if len(clients[self.room]) == 0:
-            # nobody left
-            scheduleDeleteRoom(self.room)
+        try:
+            if self.room in clients and self.id in clients[self.room]:
+                del clients[self.room][self.id]
+            broadcastToRoom(self.room, "ONLINE " + str(len(clients[self.room])))
+            if len(clients[self.room]) == 0:
+                # nobody left
+                scheduleDeleteRoom(self.room)
+        except KeyError:
+            logging.warning("Trying to close on non-existent room {}".format(self.room))
 
     @classmethod
     def server_push(cls):
