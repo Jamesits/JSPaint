@@ -11,8 +11,12 @@ import re
 import logging
 import string
 import signal
+import os
 
 from tornado.options import define, options, parse_command_line
+
+if not os.path.exists("history"):
+    os.makedirs("history")
 
 # we gonna store clients in dictionary..
 clients = dict()
