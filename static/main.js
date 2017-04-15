@@ -91,13 +91,13 @@ var onReady = function () {
         resetEnabledButton();
         addClass(document.getElementById('red'), 'round-button-selected');
     });
-    document.getElementById('blue').addEventListener('click', function () {
+    document.getElementById('green').addEventListener('click', function () {
         p.set('tool', 'marker');
         p.set('color', '#00FF00');
         resetEnabledButton();
         addClass(document.getElementById('blue'), 'round-button-selected');
     });
-    document.getElementById('green').addEventListener('click', function () {
+    document.getElementById('blue').addEventListener('click', function () {
         p.set('tool', 'marker');
         p.set('color', '#0000FF');
         resetEnabledButton();
