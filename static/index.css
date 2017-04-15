@@ -92,6 +92,7 @@ seperator {
     margin-bottom: auto;
     margin-right: auto;
     font-size: 32px;
+    font-family: Helvetica, Arial, serif;
 }
 
 #toolbar button, #toolbar input {

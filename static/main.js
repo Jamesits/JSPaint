@@ -119,6 +119,9 @@ var onReady = function () {
     });
 
     // hide debug panel
+    if (getURLParameter('debug') != 1){
+        document.getElementById('displaydebug').setAttribute('class', 'hide');
+    }
     document.getElementById('debug').setAttribute('class', 'hide');
 };
 
