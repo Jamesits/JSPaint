@@ -1,6 +1,12 @@
 # JSPaint
 
-Paint on canvas with sync support.
+Real-time synced HTML canvas which used to power onepaper.io.
+
+## Usage
+
+```shell
+docker run --rm -it -v /path/to/your/history:/usr/local/src/JSPaint/history jspaint
+```
 
 ## Thanks
 
